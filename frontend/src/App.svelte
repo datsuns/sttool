@@ -1,9 +1,12 @@
 <script>
   import logo from './assets/images/logo-universal.png'
   import {Greet} from '../wailsjs/go/main/App.js'
+  import Button, { Label } from '@smui/button';
 
   let resultText = "Please enter your name below 👇"
   let name
+  let clicked = 0;
+
 
   function greet() {
     Greet(name).then(result => resultText = result)
@@ -11,8 +14,16 @@
 </script>
 
 <main>
+  <link rel="stylesheet" href="node_modules/svelte-material-ui/bare.css" />
   <img alt="Wails logo" id="logo" src="{logo}">
   <div class="result" id="result">{resultText}</div>
+  <pre class="status">Clicked: {clicked}</pre>
+  <Button on:click={() => clicked++} variant="raised">
+    <Label>Raised</Label>
+  </Button>
+  <Button color="secondary" on:click={() => clicked++} variant="raised">
+    <Label>Raised</Label>
+  </Button>
   <div class="input-box" id="input">
     <input autocomplete="off" bind:value={name} class="input" id="name" type="text"/>
     <button class="btn" on:click={greet}>Greet</button>
