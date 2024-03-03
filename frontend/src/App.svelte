@@ -2,13 +2,25 @@
   import logo from './assets/images/logo-universal.png'
   import {Greet} from '../wailsjs/go/main/App.js'
   import Button, { Label } from '@smui/button';
+  import { OpenURL } from '../wailsjs/go/main/App.js';
+  import { DebugRaidTest  } from '../wailsjs/go/main/App.js';
+  import { LogPrint } from '../wailsjs/runtime/runtime'
 
   let resultText = "Please enter your name below 👇"
   let name
   let clicked = 0;
+  let dbg_RaidUser = "";
 
+  function openLink(url) {
+    OpenURL(url).then(result => LogPrint("Opened2"));
+  };
+
+  const callDebugRaidTest = async () => {
+    await DebugRaidTest(dbg_RaidUser);
+  };
 
   function greet() {
+    LogPrint("Greet");
     Greet(name).then(result => resultText = result)
   }
 </script>
@@ -26,8 +38,10 @@
   </Button>
   <div class="input-box" id="input">
     <input autocomplete="off" bind:value={name} class="input" id="name" type="text"/>
-    <button class="btn" on:click={greet}>Greet</button>
+    <button class="btn" on:click={() => openLink('https://www.google.com/')}>Greet</button>
   </div>
+  <input bind:value={dbg_RaidUser}  class="input" placeholder="debug raid user" />
+  <button on:click={callDebugRaidTest}>raid test</button>
 </main>
 
 <style>
