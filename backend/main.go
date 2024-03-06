@@ -20,6 +20,7 @@ type UserClip struct {
 	Thumbnail string
 	ViewCount int
 }
+
 type RaidCallbackParam struct {
 	From  UserName
 	Clips []UserClip
