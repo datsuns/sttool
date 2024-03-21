@@ -146,6 +146,7 @@ func progress(ctx *BackgroundContext, done *chan struct{}, cfg *Config, conn *we
 		}
 	}
 }
+
 func buildLogPath(cfg *Config) string {
 	if Test {
 		return filepath.Join(cfg.LogDest, "local.test.txt")

@@ -50,7 +50,7 @@ func createEventSubscription(cfg *Config, r *Responce, event string, e *EventTab
 	return err
 }
 
-func referTargetUserIdWith(cfg *Config, username string) string {
+func referTargetUserIdWith(cfg *Config, username string) (string, string, string) {
 	url := fmt.Sprintf("https://api.twitch.tv/helix/users?login=%v", username)
 	ret, err := issueEventSubRequest(cfg, "GET", url, nil)
 	if err != nil {
@@ -61,11 +61,16 @@ func referTargetUserIdWith(cfg *Config, username string) string {
 	if err != nil {
 		logger.Error("json.Unmarshal", "ERR", err.Error())
 	}
-	logger.Info("SubscribeTarget", "id", r.Data[0].Id, "name", r.Data[0].DisplayName)
-	return r.Data[0].Id
+	logger.Info("referUserId", "id", r.Data[0].Id, "name", r.Data[0].DisplayName)
+	return r.Data[0].Id, r.Data[0].Login, r.Data[0].DisplayName
 }
 
 func ReferTargetUserId(cfg *Config) string {
+	id, _, _ := referTargetUserIdWith(cfg, cfg.TargetUser)
+	return id
+}
+
+func ReferTargetUser(cfg *Config) (string, string, string) {
 	return referTargetUserIdWith(cfg, cfg.TargetUser)
 }
 
@@ -95,7 +100,7 @@ func issueGetClipRequest(cfg *Config, url string) (string, *GetClipsApiResponce)
 }
 
 func referUserClipsByDate(cfg *Config, userId string, featured bool, date *time.Time) (text string, ret *GetClipsApiResponce) {
-	maxN := 5
+	maxN := 4
 	url := fmt.Sprintf("https://api.twitch.tv/helix/clips?broadcaster_id=%v&is_featured=%v&first=%v", userId, featured, maxN)
 	if date != nil {
 		url += fmt.Sprintf("&started_at=%v", date.UTC().Format(time.RFC3339))

@@ -18,8 +18,6 @@ func NewApp() *App {
 	return &App{}
 }
 
-// startup is called when the app starts. The context is saved
-// so we can call the runtime methods
 func (a *App) startup(ctx context.Context) {
 	a.ctx = ctx
 	a.Items = []backend.UserClip{}
@@ -42,12 +40,14 @@ func (a *App) OpenURL(url string) {
 }
 
 func (a *App) OnKeepAliveCallback() {
-	runtime.LogDebug(a.ctx, "KeepAlive")
+	//runtime.LogDebug(a.ctx, "KeepAlive")
 	//runtime.EventsEmit(a.ctx, "testevent", "event from backend", a.Items)
 }
 
 func (a *App) OnRaidCallback(param *backend.RaidCallbackParam) {
-	runtime.LogDebug(a.ctx, "OnRaidCallback")
+	runtime.LogDebug(a.ctx,
+		fmt.Sprintf("OnRaidCallback from[%v]", param.From),
+	)
 	runtime.EventsEmit(a.ctx, "OnRaid", "raided users clip", param.From, param.Clips)
 	//runtime.EventsEmit(a.ctx, "OnRaid", "raided users clip", param.From, param.Clips)
 }
@@ -62,7 +62,7 @@ func (a *App) DebugRaidTest(userName string) {
 	runtime.LogDebug(a.ctx, fmt.Sprintf("start DebugRaid w/ [%v]", userName))
 	cfg, _ := backend.LoadConfig()
 	cfg.TargetUser = userName
-	id := backend.ReferTargetUserId(cfg)
+	id, _, diplayName := backend.ReferTargetUser(cfg)
 	runtime.LogDebug(a.ctx, fmt.Sprintf("user [%v] is [%v]", userName, id))
 	_, ret := backend.ReferUserClips(cfg, id)
 	data := []backend.UserClip{}
@@ -74,5 +74,5 @@ func (a *App) DebugRaidTest(userName string) {
 			Title:     c.Title})
 		runtime.LogDebug(a.ctx, fmt.Sprintf("found clip [%v]", c.Title))
 	}
-	runtime.EventsEmit(a.ctx, "OnRaid", "raided users clip", userName, data)
+	runtime.EventsEmit(a.ctx, "OnRaid", "raided users clip", diplayName, data)
 }
