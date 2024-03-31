@@ -6,13 +6,17 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "prepare": "npm run smui-theme-light && npm run smui-theme-dark",
+    "smui-theme-light": "smui-theme compile src/smui.css -i src/theme",
+    "smui-theme-dark": "smui-theme compile src/smui-dark.css -i src/theme/dark"
   },
   "devDependencies": {
     "@smui/button": "^7.0.0-beta.16",
     "@smui/card": "^7.0.0-beta.16",
     "@smui/layout-grid": "^7.0.0-beta.16",
     "@sveltejs/vite-plugin-svelte": "^1.0.1",
+    "smui-theme": "^7.0.0-beta.18",
     "svelte": "^3.49.0",
     "vite": "^3.0.7"
   },

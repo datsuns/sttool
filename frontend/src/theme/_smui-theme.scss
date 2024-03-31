@@ -1,0 +1,36 @@
+@use 'sass:color';
+
+@use '@material/theme/color-palette';
+
+// Svelte Colors!
+@use '@material/theme/index' as theme with ($primary: #ff3e00,
+  $secondary: #676778,
+  $surface: rgba(27, 38, 54, 1),
+  $background: #fff,
+  $error: color-palette.$red-900);
+
+@use "@material/card";
+@include card.core-styles;
+
+html,
+body {
+  background-color: theme.$surface;
+  color: theme.$on-surface;
+  text-align: center;
+}
+
+a {
+  color: #40b3ff;
+}
+
+a:visited {
+  color: color.scale(#40b3ff, $lightness: -35%);
+}
+
+@font-face {
+  font-family: "Nunito";
+  font-style: normal;
+  font-weight: 100;
+  src: local(""),
+    url("assets/fonts/nunito-v16-latin-regular.woff2") format("woff2");
+}
