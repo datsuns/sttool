@@ -1,14 +1,11 @@
 <script>
-  import Button, { Label } from "@smui/button";
+  import { onMount } from "svelte";
   import LayoutGrid, { Cell } from "@smui/layout-grid";
   import Card, {
     Content,
     PrimaryAction,
     Media,
     MediaContent,
-    Actions,
-    ActionButtons,
-    ActionIcons,
   } from "@smui/card";
   import { OpenURL } from "../wailsjs/go/main/App.js";
   import { DebugRaidTest } from "../wailsjs/go/main/App.js";
@@ -16,6 +13,10 @@
 
   let dbg_RaidUser = "";
   let Clips = [];
+
+  onMount(() => {
+    //DebugRaidTest("twitch-id");
+  });
 
   function openLink(url) {
     OpenURL(url).then((result) => LogPrint("Opened2"));
@@ -36,7 +37,12 @@
 </script>
 
 <main>
-  <link rel="stylesheet" href="node_modules/svelte-material-ui/bare.css" />
+  <!-- SMUI Styles -->
+  <link
+    rel="stylesheet"
+    href="/src/smui.css"
+    media="(prefers-color-scheme: light)"
+  />
   <input
     bind:value={dbg_RaidUser}
     class="input"
@@ -47,19 +53,22 @@
     <h1>{clip.name} さんのクリップ</h1>
     <LayoutGrid>
       {#each clip.body as c}
-        <Cell span="3" desktop="3">
-          <Card>
-            <PrimaryAction on:click={() => openLink(c.Url)}>
+        <Cell span={4}>
+          <Card style="height: 100%;">
+            <PrimaryAction
+              style="height: 100%;"
+              on:click={() => openLink(c.Url)}
+            >
               <Media class="card-media-16x9" aspectRatio="16x9">
                 <MediaContent>
-                  <img class="Thumbnail" src={c.Thumbnail} alt={c.Title} />
+                  <img class="my-thumbnail" src={c.Thumbnail} alt={c.Title} />
                 </MediaContent>
               </Media>
-              <Content class="mdc-typography--body2" style="color: blue;">
-                <p>{c.Title}</p>
+              <Content>
+                <div class="my-clip-title">{c.Title}</div>
               </Content>
-              <Content class="mdc-typography--body2" style="color: black;">
-                再生数:{c.ViewCount}
+              <Content>
+                <div class="my-viewcount">再生数:{c.ViewCount}</div>
               </Content>
             </PrimaryAction>
           </Card>
@@ -70,8 +79,25 @@
 </main>
 
 <style>
-  .Thumbnail {
-    width: 75%;
+  :global(.mdc-card) {
+    background-color: rgba(18, 29, 45, 1);
+  }
+
+  .my-thumbnail {
+    width: 100%;
     height: 100%;
+  }
+
+  .my-clip-title {
+    color: whitesmoke;
+  }
+
+  .my-viewcount {
+    position: absolute;
+    color: darkgray;
+    bottom: 8px;
+    left: 0px;
+    right: 0px;
+    font-size: 70%;
   }
 </style>
