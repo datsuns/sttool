@@ -13,6 +13,7 @@ type OverlayContext struct {
 	ServerPort       int
 	PlayMarginSecond int
 	ClipId           string
+	ClipContext      *ClipPlayContext
 }
 
 const OverlayHtml = `
@@ -44,12 +45,41 @@ const OverlayHtml = `
 </html>
 `
 
+type ClipPlayContext struct {
+	Interval   time.Duration
+	Canceled   bool
+	ChanFinish *chan struct{}
+}
+
+func NewClipPlayContext(interval time.Duration, chn *chan struct{}) *ClipPlayContext {
+	return &ClipPlayContext{
+		Interval:   interval,
+		Canceled:   false,
+		ChanFinish: chn,
+	}
+}
+
+func (c *ClipPlayContext) Play() {
+	time.Sleep(c.Interval)
+	if c.Canceled {
+		logger.Info("Overlay", slog.Any("msg", "clip already canceled"))
+		return
+	}
+	*(c.ChanFinish) <- struct{}{}
+	logger.Info("Overlay:finished")
+}
+
+func (c *ClipPlayContext) Cancel() {
+	c.Canceled = true
+}
+
 func NewOverlay(cfg *Config) *OverlayContext {
 	ret := &OverlayContext{
 		ChannStartClip:   make(chan struct{}),
 		ChannStopClip:    make(chan struct{}),
 		ServerPort:       cfg.LocalServerPortNumber,
 		PlayMarginSecond: cfg.ClipPlayIntervalMarginSecond,
+		ClipContext:      nil,
 	}
 	return ret
 }
@@ -73,22 +103,23 @@ func (o *OverlayContext) buildPlayInterval(clipDuration float32) time.Duration {
 }
 
 func (o *OverlayContext) StartClip(clipId string, duration float32) {
+	if o.ClipContext != nil {
+		o.ClipContext.Cancel()
+		o.ClipContext = nil
+	}
 	o.ClipId = clipId
 	o.ChannStartClip <- struct{}{}
 	interval := o.buildPlayInterval(duration)
-	logger.Info("Overlay:interval", slog.Any("time", interval))
-	time.Sleep(interval)
-	if o.ClipId != clipId {
-		logger.Info("Overlay", slog.Any("msg", "other clip already started"))
-		return
-	}
-	o.ClipId = ""
-	o.ChannStopClip <- struct{}{}
-	logger.Info("Overlay:finished")
+	logger.Info("Overlay:interval", slog.Any("clip time", duration), slog.Any("interval", interval))
+	o.ClipContext = NewClipPlayContext(interval, &o.ChannStopClip)
+	o.ClipContext.Play()
 }
 
 func (o *OverlayContext) StopClip() {
-	o.ClipId = ""
+	if o.ClipId == "" {
+		logger.Info("Overlay", slog.Any("msg", "clip already stopped"))
+		return
+	}
 	o.ChannStopClip <- struct{}{}
 	logger.Info("Overlay:forceStop")
 }
