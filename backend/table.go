@@ -9,7 +9,7 @@ import (
 )
 
 type CreateRequestBuilder func(*Config, *Responce, string, string) []byte
-type NotificationHandler func(*BackgroundContext, *Config, *Responce, []byte, *TwitchStats)
+type NotificationHandler func(*BackendContext, *Config, *Responce, []byte, *TwitchStats)
 
 type EventTableEntry struct {
 	LogTitle string
@@ -123,7 +123,7 @@ func handleNotificationDefault(_ *Config, r *Responce, raw []byte, _ *TwitchStat
 	)
 }
 
-func handleNotificationChannelSubscribe(_ *BackgroundContext, _ *Config, r *Responce, raw []byte, s *TwitchStats) {
+func handleNotificationChannelSubscribe(_ *BackendContext, _ *Config, r *Responce, raw []byte, s *TwitchStats) {
 	v := &ResponceChannelSubscribe{}
 	err := json.Unmarshal(raw, &v)
 	if err != nil {
@@ -149,7 +149,7 @@ func handleNotificationChannelSubscribe(_ *BackgroundContext, _ *Config, r *Resp
 	}
 }
 
-func handleNotificationChannelCheer(_ *BackgroundContext, _ *Config, r *Responce, raw []byte, s *TwitchStats) {
+func handleNotificationChannelCheer(_ *BackendContext, _ *Config, r *Responce, raw []byte, s *TwitchStats) {
 	v := &ResponceChannelCheer{}
 	err := json.Unmarshal(raw, &v)
 	if err != nil {
@@ -166,7 +166,7 @@ func handleNotificationChannelCheer(_ *BackgroundContext, _ *Config, r *Responce
 	s.Cheer(UserName(e.UserName), e.Bits)
 }
 
-func handleNotificationStreamOnline(_ *BackgroundContext, cfg *Config, r *Responce, raw []byte, s *TwitchStats) {
+func handleNotificationStreamOnline(_ *BackendContext, cfg *Config, r *Responce, raw []byte, s *TwitchStats) {
 	path := buildLogPath(cfg)
 	_, statsLogger, infoLogger = buildLogger(cfg, path, Debug)
 
@@ -185,7 +185,7 @@ func handleNotificationStreamOnline(_ *BackgroundContext, cfg *Config, r *Respon
 	os.Remove(cfg.RaidLogPath)
 }
 
-func handleNotificationStreamOffline(_ *BackgroundContext, cfg *Config, r *Responce, raw []byte, s *TwitchStats) {
+func handleNotificationStreamOffline(_ *BackendContext, cfg *Config, r *Responce, raw []byte, s *TwitchStats) {
 	v := &ResponceStreamOffline{}
 	err := json.Unmarshal(raw, &v)
 	if err != nil {
@@ -203,7 +203,7 @@ func handleNotificationStreamOffline(_ *BackgroundContext, cfg *Config, r *Respo
 }
 
 // サブギフした
-func handleNotificationChannelSubscriptionGift(_ *BackgroundContext, _ *Config, r *Responce, raw []byte, s *TwitchStats) {
+func handleNotificationChannelSubscriptionGift(_ *BackendContext, _ *Config, r *Responce, raw []byte, s *TwitchStats) {
 	v := &ResponceChannelSubscriptionGift{}
 	err := json.Unmarshal(raw, &v)
 	if err != nil {
@@ -223,7 +223,7 @@ func handleNotificationChannelSubscriptionGift(_ *BackgroundContext, _ *Config, 
 }
 
 // 継続サブスクをチャットでシェアした
-func handleNotificationChannelSubscriptionMessage(_ *BackgroundContext, _ *Config, r *Responce, raw []byte, s *TwitchStats) {
+func handleNotificationChannelSubscriptionMessage(_ *BackendContext, _ *Config, r *Responce, raw []byte, s *TwitchStats) {
 	v := &ResponceChannelSubscriptionMessage{}
 	err := json.Unmarshal(raw, &v)
 	if err != nil {
@@ -241,7 +241,7 @@ func handleNotificationChannelSubscriptionMessage(_ *BackgroundContext, _ *Confi
 	s.SubScribe(UserName(e.UserName), e.Tier)
 }
 
-func handleNotificationChannelPointsCustomRewardRedemptionAdd(_ *BackgroundContext, _ *Config, r *Responce, raw []byte, s *TwitchStats) {
+func handleNotificationChannelPointsCustomRewardRedemptionAdd(_ *BackendContext, _ *Config, r *Responce, raw []byte, s *TwitchStats) {
 	v := &ResponceChannelPointsCustomRewardRedemptionAdd{}
 	err := json.Unmarshal(raw, &v)
 	if err != nil {
@@ -257,7 +257,7 @@ func handleNotificationChannelPointsCustomRewardRedemptionAdd(_ *BackgroundConte
 	s.ChannelPoint(UserName(e.UserName), ChannelPointTitle(e.Reward.Title))
 }
 
-func handleNotificationChannelChatNotificationSubGifted(_ *BackgroundContext, _ *Config, r *Responce, e *EventFormatChannelChatNotification, s *TwitchStats) {
+func handleNotificationChannelChatNotificationSubGifted(_ *BackendContext, _ *Config, r *Responce, e *EventFormatChannelChatNotification, s *TwitchStats) {
 	statsLogger.Info("event(SubGiftReceived)",
 		slog.Any(LogFieldName_Type, r.Payload.Subscription.Type),
 		slog.Any("category", "サブギフ受信"),
@@ -267,7 +267,7 @@ func handleNotificationChannelChatNotificationSubGifted(_ *BackgroundContext, _ 
 	s.SubGifted(UserName(e.SubGift.RecipientUserName), e.SubGift.Sub_Tier)
 }
 
-func handleNotificationChannelChatNotificationRaid(ctx *BackgroundContext, cfg *Config, r *Responce, e *EventFormatChannelChatNotification, s *TwitchStats) {
+func handleNotificationChannelChatNotificationRaid(ctx *BackendContext, cfg *Config, r *Responce, e *EventFormatChannelChatNotification, s *TwitchStats) {
 	statsLogger.Info("event(Raid)",
 		slog.Any(LogFieldName_Type, r.Payload.Subscription.Type),
 		slog.Any("category", "レイド"),
@@ -283,16 +283,18 @@ func handleNotificationChannelChatNotificationRaid(ctx *BackgroundContext, cfg *
 	p := &RaidCallbackParam{From: UserName(e.RaId.UserName), Clips: []UserClip{}}
 	for _, c := range clips.Data {
 		p.Clips = append(p.Clips, UserClip{
+			Id:        c.Id,
 			Url:       c.Url,
 			Thumbnail: c.ThumbnailUrl,
 			Title:     c.Title,
 			ViewCount: c.ViewCount,
+			Duration:  c.Duration,
 		})
 	}
 	ctx.CallBack.OnRaid(p)
 }
 
-func handleNotificationChannelChatNotification(ctx *BackgroundContext, cfg *Config, r *Responce, raw []byte, s *TwitchStats) {
+func handleNotificationChannelChatNotification(ctx *BackendContext, cfg *Config, r *Responce, raw []byte, s *TwitchStats) {
 	v := &ResponceChannelChatNotification{}
 	err := json.Unmarshal(raw, &v)
 	if err != nil {
@@ -321,7 +323,7 @@ func handleNotificationChannelChatNotification(ctx *BackgroundContext, cfg *Conf
 	}
 }
 
-func handleNotificationChannelChatMessage(_ *BackgroundContext, _ *Config, r *Responce, raw []byte, _ *TwitchStats) {
+func handleNotificationChannelChatMessage(_ *BackendContext, _ *Config, r *Responce, raw []byte, _ *TwitchStats) {
 	v := &ResponceChatMessage{}
 	err := json.Unmarshal(raw, &v)
 	if err != nil {
@@ -336,7 +338,7 @@ func handleNotificationChannelChatMessage(_ *BackgroundContext, _ *Config, r *Re
 	)
 }
 
-func handleNotificationChannelFollow(_ *BackgroundContext, _ *Config, r *Responce, raw []byte, s *TwitchStats) {
+func handleNotificationChannelFollow(_ *BackendContext, _ *Config, r *Responce, raw []byte, s *TwitchStats) {
 	v := &ResponceChannelFollow{}
 	err := json.Unmarshal(raw, &v)
 	if err != nil {
@@ -351,7 +353,7 @@ func handleNotificationChannelFollow(_ *BackgroundContext, _ *Config, r *Responc
 	s.Follow(UserName(e.UserName))
 }
 
-func handleNotificationRaidStarted(_ *BackgroundContext, cfg *Config, r *Responce, raw []byte, _ *TwitchStats) {
+func handleNotificationRaidStarted(_ *BackendContext, cfg *Config, r *Responce, raw []byte, _ *TwitchStats) {
 	statsLogger.Info("event(Raid Started)",
 		slog.Any(LogFieldName_Type, r.Payload.Subscription.Type),
 	)

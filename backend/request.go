@@ -94,7 +94,7 @@ func issueGetClipRequest(cfg *Config, url string) (string, *GetClipsApiResponce)
 	ret := ""
 	for _, v := range r.Data {
 		//infoLogger.Info("UserClip", slog.Any("タイトル", v.Title), slog.Any("URL", v.Url), slog.Any("視聴回数", v.ViewCount))
-		ret += fmt.Sprintf("   再生回数[%v] / タイトル[%v] / URL[ %v ]\n", v.ViewCount, v.Title, v.Url)
+		ret += fmt.Sprintf("   再生回数[%v] / タイトル[%v] / URL[ %v ] / Id[ %v ]\n", v.ViewCount, v.Title, v.Url, v.Id)
 	}
 	return ret, r
 }

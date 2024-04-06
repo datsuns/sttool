@@ -6,10 +6,14 @@ export function DebugAppendEntry():Promise<void>;
 
 export function DebugRaidTest(arg1:string):Promise<void>;
 
-export function Greet(arg1:string):Promise<string>;
+export function GetServerPort():Promise<number>;
 
 export function OnKeepAliveCallback():Promise<void>;
 
 export function OnRaidCallback(arg1:backend.RaidCallbackParam):Promise<void>;
 
 export function OpenURL(arg1:string):Promise<void>;
+
+export function StartClip(arg1:string,arg2:number):Promise<void>;
+
+export function StopClip():Promise<void>;

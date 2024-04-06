@@ -10,8 +10,8 @@ export function DebugRaidTest(arg1) {
   return window['go']['main']['App']['DebugRaidTest'](arg1);
 }
 
-export function Greet(arg1) {
-  return window['go']['main']['App']['Greet'](arg1);
+export function GetServerPort() {
+  return window['go']['main']['App']['GetServerPort']();
 }
 
 export function OnKeepAliveCallback() {
@@ -24,4 +24,12 @@ export function OnRaidCallback(arg1) {
 
 export function OpenURL(arg1) {
   return window['go']['main']['App']['OpenURL'](arg1);
+}
+
+export function StartClip(arg1, arg2) {
+  return window['go']['main']['App']['StartClip'](arg1, arg2);
+}
+
+export function StopClip() {
+  return window['go']['main']['App']['StopClip']();
 }

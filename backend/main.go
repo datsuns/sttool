@@ -15,10 +15,12 @@ import (
 )
 
 type UserClip struct {
+	Id        string
 	Url       string
 	Title     string
 	Thumbnail string
 	ViewCount int
+	Duration  float32
 }
 
 type RaidCallbackParam struct {
@@ -31,8 +33,10 @@ type CallBack struct {
 	KeepAlive KeepAliveCallback
 	OnRaid    RaidCallback
 }
-type BackgroundContext struct {
+type BackendContext struct {
 	CallBack *CallBack
+	Config   *Config
+	Overlay  *OverlayContext
 }
 
 var (
@@ -105,7 +109,7 @@ func handleSessionWelcome(cfg *Config, r *Responce, raw []byte, _ *TwitchStats) 
 	}
 }
 
-func handleNotification(ctx *BackgroundContext, cfg *Config, r *Responce, raw []byte, stats *TwitchStats) bool {
+func handleNotification(ctx *BackendContext, cfg *Config, r *Responce, raw []byte, stats *TwitchStats) bool {
 	logger.Info("ReceiveNotification", "type", r.Payload.Subscription.Type)
 	if e, exists := TwitchEventTable[r.Payload.Subscription.Type]; exists {
 		e.Handler(ctx, cfg, r, raw, stats)
@@ -118,7 +122,7 @@ func handleNotification(ctx *BackgroundContext, cfg *Config, r *Responce, raw []
 	return true
 }
 
-func progress(ctx *BackgroundContext, done *chan struct{}, cfg *Config, conn *websocket.Conn, stats *TwitchStats) {
+func progress(ctx *BackendContext, done *chan struct{}, cfg *Config, conn *websocket.Conn, stats *TwitchStats) {
 	for {
 		r, raw, err := receive(conn)
 		if err != nil {
@@ -173,6 +177,7 @@ func buildLogger(c *Config, logPath string, debug bool) (*slog.Logger, *slog.Log
 	} else {
 		return slog.New(
 				slogmulti.Fanout(
+					slog.NewTextHandler(os.Stdout, nil),
 					slog.NewTextHandler(runlog, nil),
 				),
 			),
@@ -181,18 +186,29 @@ func buildLogger(c *Config, logPath string, debug bool) (*slog.Logger, *slog.Log
 	}
 }
 
-func Serve(callback *CallBack) {
-	ctx := &BackgroundContext{CallBack: callback}
+func NewBackend(callback *CallBack) *BackendContext {
+	ctx := &BackendContext{
+		CallBack: callback,
+	}
 	cfg, err := LoadConfig()
 	if err != nil {
 		panic(err)
 	}
+	ctx.Config = cfg
 	Debug = cfg.DebugMode
 	Test = cfg.LocalTest
+	ctx.Overlay = NewOverlay(cfg)
+	return ctx
+}
 
-	path := buildLogPath(cfg)
-	logger, statsLogger, infoLogger = buildLogger(cfg, path, Debug)
-	cfg.TargetUserId = ReferTargetUserId(cfg)
+func (c *BackendContext) GetOverlayPortNumber() int {
+	return c.Config.LocalServerPortNumber
+}
+
+func (c *BackendContext) Serve() {
+	path := buildLogPath(c.Config)
+	logger, statsLogger, infoLogger = buildLogger(c.Config, path, Debug)
+	c.Config.TargetUserId = ReferTargetUserId(c.Config)
 	statsLogger.Info("ToolVersion", slog.Any(LogFieldName_Type, "ToolVersion"), slog.Any("value", ToolVersion))
 
 	stats = NewTwitchStats()
@@ -200,15 +216,16 @@ func Serve(callback *CallBack) {
 	interrupt := make(chan os.Signal, 1)
 	signal.Notify(interrupt, os.Interrupt)
 
-	c, _ := connect()
-	defer c.Close()
+	conn, _ := connect()
+	defer conn.Close()
 
 	done := make(chan struct{})
 	go func() {
 		defer close(done)
-		progress(ctx, &done, cfg, c, stats)
+		progress(c, &done, c.Config, conn, stats)
 	}()
-	StartWatcher(cfg, done)
+	StartWatcher(c.Config, done)
+	c.Overlay.Serve(c.Config)
 
 	ticker := time.NewTicker(time.Second)
 	defer ticker.Stop()
@@ -230,7 +247,7 @@ func Serve(callback *CallBack) {
 
 			// Cleanly close the connection by sending a close message and then
 			// waiting (with timeout) for the server to close the connection.
-			err := c.WriteMessage(websocket.CloseMessage, websocket.FormatCloseMessage(websocket.CloseNormalClosure, ""))
+			err := conn.WriteMessage(websocket.CloseMessage, websocket.FormatCloseMessage(websocket.CloseNormalClosure, ""))
 			if err != nil {
 				logger.Error("write close " + err.Error())
 				return

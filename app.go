@@ -10,8 +10,9 @@ import (
 )
 
 type App struct {
-	ctx   context.Context
-	Items []backend.UserClip
+	ctx     context.Context
+	Items   []backend.UserClip
+	Backend *backend.BackendContext
 }
 
 func NewApp() *App {
@@ -25,12 +26,20 @@ func (a *App) startup(ctx context.Context) {
 		KeepAlive: a.OnKeepAliveCallback,
 		OnRaid:    a.OnRaidCallback,
 	}
-	go backend.Serve(callback)
+	a.Backend = backend.NewBackend(callback)
+	go a.Backend.Serve()
 }
 
-// Greet returns a greeting for the given name
-func (a *App) Greet(name string) string {
-	return fmt.Sprintf("Hello %s, It's show time!", name)
+func (a *App) StartClip(id string, duration float32) {
+	a.Backend.Overlay.StartClip(id, duration)
+}
+
+func (a *App) StopClip() {
+	a.Backend.Overlay.StopClip()
+}
+
+func (a *App) GetServerPort() int {
+	return a.Backend.GetOverlayPortNumber()
 }
 
 func (a *App) OpenURL(url string) {
@@ -68,10 +77,13 @@ func (a *App) DebugRaidTest(userName string) {
 	data := []backend.UserClip{}
 	for _, c := range ret.Data {
 		data = append(data, backend.UserClip{
+			Id:        c.Id,
 			Url:       c.Url,
 			Thumbnail: c.ThumbnailUrl,
 			ViewCount: c.ViewCount,
-			Title:     c.Title})
+			Title:     c.Title,
+			Duration:  c.Duration,
+		})
 		runtime.LogDebug(a.ctx, fmt.Sprintf("found clip [%v]", c.Title))
 	}
 	runtime.EventsEmit(a.ctx, "OnRaid", "raided users clip", diplayName, data)

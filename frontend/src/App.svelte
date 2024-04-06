@@ -7,23 +7,39 @@
     Media,
     MediaContent,
   } from "@smui/card";
-  import { OpenURL } from "../wailsjs/go/main/App.js";
+  import {
+    OpenURL,
+    StartClip,
+    StopClip,
+    GetServerPort,
+  } from "../wailsjs/go/main/App.js";
   import { DebugRaidTest } from "../wailsjs/go/main/App.js";
   import { LogPrint, EventsOn } from "../wailsjs/runtime/runtime";
 
   let dbg_RaidUser = "";
   let Clips = [];
+  let ServerPort = 0;
 
   onMount(() => {
     //DebugRaidTest("twitch-id");
+    GetServerPort().then((result) => (ServerPort = result));
   });
 
   function openLink(url) {
-    OpenURL(url).then((result) => LogPrint("Opened2"));
+    OpenURL(url).then((result) => LogPrint("open link"));
   }
 
   const callDebugRaidTest = async () => {
     await DebugRaidTest(dbg_RaidUser);
+  };
+
+  function startClipTest(id, duration) {
+    StartClip(id, duration).then((result) => LogPrint("Clip finished"));
+  }
+
+  const stopClipTest = async () => {
+    await StopClip();
+    LogPrint("stop Clip");
   };
 
   EventsOn("OnRaid", (msg, username, items) => {
@@ -49,6 +65,10 @@
     placeholder="レイドテスト用(ユーザID)"
   />
   <button on:click={callDebugRaidTest}>raid test</button>
+  <div class="my-overlay-url">
+    http://localhost:{ServerPort}
+  </div>
+  <button on:click={stopClipTest}>stop clip</button>
   {#each Clips.slice().reverse() as clip}
     <h1>{clip.name} さんのクリップ</h1>
     <LayoutGrid>
@@ -57,7 +77,7 @@
           <Card style="height: 100%;">
             <PrimaryAction
               style="height: 100%;"
-              on:click={() => openLink(c.Url)}
+              on:click={() => startClipTest(c.Id, c.Duration)}
             >
               <Media class="card-media-16x9" aspectRatio="16x9">
                 <MediaContent>
@@ -86,6 +106,10 @@
   .my-thumbnail {
     width: 100%;
     height: 100%;
+  }
+
+  .my-overlay-url {
+    color: lightblue;
   }
 
   .my-clip-title {
