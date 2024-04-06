@@ -37,12 +37,10 @@ type BackendContext struct {
 	CallBack *CallBack
 	Config   *Config
 	Overlay  *OverlayContext
+	Stats    *TwitchStats
 }
 
 var (
-	Debug = false
-	Test  = false
-
 	logger      *slog.Logger
 	infoLogger  *slog.Logger
 	statsLogger *slog.Logger
@@ -53,17 +51,15 @@ var (
 
 	path      = "/ws"
 	keepalive = "30"
-
-	stats *TwitchStats
 )
 
 func buildQuery() string {
 	return fmt.Sprintf("keepalive_timeout_seconds=%v", keepalive)
 }
 
-func connect() (*websocket.Conn, error) {
+func connect(localTest bool) (*websocket.Conn, error) {
 	var u url.URL
-	if Test {
+	if localTest {
 		u = url.URL{Scheme: LocalTestScheme, Host: LocalTestAddr, Path: path, RawQuery: buildQuery()}
 	} else {
 		u = url.URL{Scheme: scheme, Host: addr, Path: path, RawQuery: buildQuery()}
@@ -78,14 +74,14 @@ func connect() (*websocket.Conn, error) {
 	return c, nil
 }
 
-func receive(conn *websocket.Conn) (*Responce, []byte, error) {
+func receive(cfg *Config, conn *websocket.Conn) (*Responce, []byte, error) {
 	r := &Responce{}
 	_, message, err := conn.ReadMessage()
 	if err != nil {
 		logger.Error("ReadMessage " + err.Error())
 		return nil, nil, err
 	}
-	if Debug {
+	if cfg.DebugMode {
 		logger.Info("receive", "raw", string(message))
 	}
 	err = json.Unmarshal(message, &r)
@@ -97,8 +93,8 @@ func receive(conn *websocket.Conn) (*Responce, []byte, error) {
 }
 
 // https://dev.twitch.tv/docs/eventsub/eventsub-subscription-types/#subscription-types
-func handleSessionWelcome(cfg *Config, r *Responce, raw []byte, _ *TwitchStats) {
-	if Test {
+func handleSessionWelcome(cfg *Config, r *Responce, _ []byte, _ *TwitchStats) {
+	if cfg.LocalTest {
 		return
 	}
 	for k, v := range TwitchEventTable {
@@ -122,9 +118,9 @@ func handleNotification(ctx *BackendContext, cfg *Config, r *Responce, raw []byt
 	return true
 }
 
-func progress(ctx *BackendContext, done *chan struct{}, cfg *Config, conn *websocket.Conn, stats *TwitchStats) {
+func progress(ctx *BackendContext, _ *chan struct{}, cfg *Config, conn *websocket.Conn, stats *TwitchStats) {
 	for {
-		r, raw, err := receive(conn)
+		r, raw, err := receive(cfg, conn)
 		if err != nil {
 			break
 		}
@@ -152,7 +148,7 @@ func progress(ctx *BackendContext, done *chan struct{}, cfg *Config, conn *webso
 }
 
 func buildLogPath(cfg *Config) string {
-	if Test {
+	if cfg.LocalTest {
 		return filepath.Join(cfg.LogDest, "local.test.txt")
 	}
 	n := time.Now()
@@ -195,8 +191,6 @@ func NewBackend(callback *CallBack) *BackendContext {
 		panic(err)
 	}
 	ctx.Config = cfg
-	Debug = cfg.DebugMode
-	Test = cfg.LocalTest
 	ctx.Overlay = NewOverlay(cfg)
 	return ctx
 }
@@ -207,41 +201,31 @@ func (c *BackendContext) GetOverlayPortNumber() int {
 
 func (c *BackendContext) Serve() {
 	path := buildLogPath(c.Config)
-	logger, statsLogger, infoLogger = buildLogger(c.Config, path, Debug)
+	logger, statsLogger, infoLogger = buildLogger(c.Config, path, c.Config.DebugMode)
 	c.Config.TargetUserId = ReferTargetUserId(c.Config)
 	statsLogger.Info("ToolVersion", slog.Any(LogFieldName_Type, "ToolVersion"), slog.Any("value", ToolVersion))
 
-	stats = NewTwitchStats()
+	c.Stats = NewTwitchStats()
 
 	interrupt := make(chan os.Signal, 1)
 	signal.Notify(interrupt, os.Interrupt)
 
-	conn, _ := connect()
+	conn, _ := connect(c.Config.LocalTest)
 	defer conn.Close()
 
 	done := make(chan struct{})
 	go func() {
 		defer close(done)
-		progress(c, &done, c.Config, conn, stats)
+		progress(c, &done, c.Config, conn, c.Stats)
 	}()
 	StartWatcher(c.Config, done)
 	c.Overlay.Serve(c.Config)
-
-	ticker := time.NewTicker(time.Second)
-	defer ticker.Stop()
 
 	for {
 		select {
 		case <-done:
 			logger.Info("done")
 			return
-		//case t := <-ticker.C:
-		//	err := c.WriteMessage(websocket.TextMessage, []byte(t.String()))
-		//	log.Println("write:", t)
-		//	if err != nil {
-		//		log.Println("writeERR:", err)
-		//		return
-		//	}
 		case <-interrupt:
 			logger.Info("interrupt")
 

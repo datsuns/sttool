@@ -117,7 +117,7 @@ func buildRequestWithWithFromUser(cfg *Config, r *Responce, subscType, version s
 	return bin
 }
 
-func handleNotificationDefault(_ *Config, r *Responce, raw []byte, _ *TwitchStats) {
+func handleNotificationDefault(_ *Config, r *Responce, _ []byte, _ *TwitchStats) {
 	statsLogger.Info("event(no handler)",
 		slog.Any(LogFieldName_Type, r.Payload.Subscription.Type),
 	)
@@ -168,7 +168,7 @@ func handleNotificationChannelCheer(_ *BackendContext, _ *Config, r *Responce, r
 
 func handleNotificationStreamOnline(_ *BackendContext, cfg *Config, r *Responce, raw []byte, s *TwitchStats) {
 	path := buildLogPath(cfg)
-	_, statsLogger, infoLogger = buildLogger(cfg, path, Debug)
+	_, statsLogger, infoLogger = buildLogger(cfg, path, cfg.DebugMode)
 
 	v := &ResponceStreamOnline{}
 	err := json.Unmarshal(raw, &v)

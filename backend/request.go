@@ -14,7 +14,7 @@ func issueEventSubRequest(cfg *Config, method, url string, body io.Reader) ([]by
 	if err != nil {
 		return nil, err
 	}
-	if Debug {
+	if cfg.DebugMode {
 		logger.Info("rest auth", "Auth", cfg.AuthCode, "ClientID", cfg.ClientId)
 	}
 	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", cfg.AuthCode))
@@ -31,7 +31,7 @@ func issueEventSubRequest(cfg *Config, method, url string, body io.Reader) ([]by
 	if err != nil {
 		return nil, err
 	}
-	if Debug {
+	if cfg.DebugMode {
 		logger.Info("request", "Status", resp.Status, "URL", url, "RawRet", string(byteArray))
 	}
 	switch resp.StatusCode {
