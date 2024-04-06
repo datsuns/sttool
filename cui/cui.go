@@ -13,5 +13,6 @@ func main() {
 		KeepAlive: OnKeepAliveCallback,
 		OnRaid:    OnRaidCallback,
 	}
-	backend.Serve(callback)
+	b := backend.NewBackend(callback)
+	b.Serve()
 }

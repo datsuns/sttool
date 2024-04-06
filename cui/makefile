@@ -4,7 +4,7 @@ default: build
 
 build: $(BIN)
 
-$(BIN):
+$(BIN): ../backend/*.go
 	go build -o $@
 
 run:
