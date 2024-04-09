@@ -147,6 +147,9 @@ func progress(ctx *BackendContext, _ *chan struct{}, cfg *Config, conn *websocke
 }
 
 func buildLogPath(cfg *Config) string {
+	if _, e := os.Stat(cfg.LogDest); e != nil {
+		os.MkdirAll(cfg.LogDest, 0750)
+	}
 	if cfg.LocalTest {
 		return filepath.Join(cfg.LogDest, "local.test.txt")
 	}
