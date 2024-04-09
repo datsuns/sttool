@@ -42,7 +42,6 @@ type BackendContext struct {
 
 var (
 	logger      *slog.Logger
-	infoLogger  *slog.Logger
 	statsLogger *slog.Logger
 	logSplit    = "   "
 
@@ -155,7 +154,7 @@ func buildLogPath(cfg *Config) string {
 	return filepath.Join(cfg.LogDest, fmt.Sprintf("%v.txt", n.Format("20060102")))
 }
 
-func buildLogger(c *Config, logPath string, debug bool) (*slog.Logger, *slog.Logger, *slog.Logger) {
+func buildLogger(c *Config, logPath string, debug bool) (*slog.Logger, *slog.Logger) {
 	log, _ := os.OpenFile(logPath, os.O_APPEND|os.O_RDWR|os.O_CREATE, 0666)
 	runlog, _ := os.OpenFile(
 		filepath.Join(c.LogDest, "debug.txt"),
@@ -168,17 +167,14 @@ func buildLogger(c *Config, logPath string, debug bool) (*slog.Logger, *slog.Log
 					NewTwitchInfoLogger(c, os.Stdout),
 				),
 			),
-			slog.New(NewTwitchInfoLogger(c, log)),
-			slog.New(NewTwitchInfoLogger(c, os.Stdout))
+			slog.New(NewTwitchInfoLogger(c, log))
 	} else {
 		return slog.New(
 				slogmulti.Fanout(
-					slog.NewTextHandler(os.Stdout, nil),
 					slog.NewTextHandler(runlog, nil),
 				),
 			),
-			slog.New(NewTwitchInfoLogger(c, log)),
-			slog.New(NewTwitchInfoLogger(c, os.Stdout))
+			slog.New(NewTwitchInfoLogger(c, log))
 	}
 }
 
@@ -201,7 +197,7 @@ func (c *BackendContext) GetOverlayPortNumber() int {
 
 func (c *BackendContext) Serve() {
 	path := buildLogPath(c.Config)
-	logger, statsLogger, infoLogger = buildLogger(c.Config, path, c.Config.DebugMode)
+	logger, statsLogger = buildLogger(c.Config, path, c.Config.DebugMode)
 	c.Config.TargetUserId = ReferTargetUserId(c.Config)
 	statsLogger.Info("ToolVersion", slog.Any(LogFieldName_Type, "ToolVersion"), slog.Any("value", ToolVersion))
 
