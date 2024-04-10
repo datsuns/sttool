@@ -218,7 +218,9 @@ func (c *BackendContext) Serve() {
 		progress(c, &done, c.Config, conn, c.Stats)
 	}()
 	StartWatcher(c.Config, done)
-	c.Overlay.Serve(c.Config)
+	if c.Config.OverlayEnabled {
+		c.Overlay.Serve(c.Config)
+	}
 
 	for {
 		select {

@@ -22,6 +22,7 @@ type Config struct {
 	NewClipWatchIntervalSecond   int      `yaml:"NEW_CLIP_INTERVAL"`
 	LocalServerPortNumber        int      `yaml:"SERVER_PORT"`
 	ClipPlayIntervalMarginSecond int      `yaml:"CLIP_MARGIN_SECOND"`
+	OverlayEnabled               bool     `yaml:"OVERLAY_ENABLE"`
 	TargetUserId                 string
 	StatsLogPath                 string
 	RaidLogPath                  string
@@ -35,6 +36,7 @@ func loadConfigFrom(raw []byte) (*Config, error) {
 		NewClipWatchIntervalSecond:   128,
 		LocalServerPortNumber:        8930,
 		ClipPlayIntervalMarginSecond: 8,
+		OverlayEnabled:               false,
 	}
 	if e := yaml.Unmarshal(raw, ret); e != nil {
 		return nil, e
