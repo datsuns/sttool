@@ -8,7 +8,7 @@ $(BIN): ../backend/*.go
 	go build -o $@
 
 run: $(BIN)
-	./$(BIN)
+	go run cui.go
 
 release: $(BIN)
 	cp ./$(BIN) ../../../../test/
