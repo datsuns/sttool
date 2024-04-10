@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"log/slog"
 	"net/http"
 	"time"
 )
@@ -50,27 +51,32 @@ func createEventSubscription(cfg *Config, r *Responce, event string, e *EventTab
 	return err
 }
 
-func referTargetUserIdWith(cfg *Config, username string) (string, string, string) {
+func referTargetUserIdWith(cfg *Config, username string) (string, string, string, error) {
 	url := fmt.Sprintf("https://api.twitch.tv/helix/users?login=%v", username)
 	ret, err := issueEventSubRequest(cfg, "GET", url, nil)
 	if err != nil {
-		logger.Error("Eventsub Request", "ERROR", err.Error())
+		logger.Error("Eventsub Request", slog.Any("ERR", err.Error()))
+		return "", "", "", err
 	}
 	r := &GetUsersApiResponce{}
 	err = json.Unmarshal(ret, &r)
 	if err != nil {
-		logger.Error("json.Unmarshal", "ERR", err.Error())
+		logger.Error("json.Unmarshal", slog.Any("ERR", err.Error()))
+		return "", "", "", err
 	}
 	logger.Info("referUserId", "id", r.Data[0].Id, "name", r.Data[0].DisplayName)
-	return r.Data[0].Id, r.Data[0].Login, r.Data[0].DisplayName
+	return r.Data[0].Id, r.Data[0].Login, r.Data[0].DisplayName, nil
 }
 
-func ReferTargetUserId(cfg *Config) string {
-	id, _, _ := referTargetUserIdWith(cfg, cfg.TargetUser)
-	return id
+func ReferTargetUserId(cfg *Config) (string, error) {
+	id, _, _, err := referTargetUserIdWith(cfg, cfg.TargetUser)
+	if err != nil {
+		return "", err
+	}
+	return id, nil
 }
 
-func ReferTargetUser(cfg *Config) (string, string, string) {
+func ReferTargetUser(cfg *Config) (string, string, string, error) {
 	return referTargetUserIdWith(cfg, cfg.TargetUser)
 }
 

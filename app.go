@@ -71,7 +71,7 @@ func (a *App) DebugRaidTest(userName string) {
 	runtime.LogDebug(a.ctx, fmt.Sprintf("start DebugRaid w/ [%v]", userName))
 	cfg, _ := backend.LoadConfig()
 	cfg.TargetUser = userName
-	id, _, diplayName := backend.ReferTargetUser(cfg)
+	id, _, diplayName, _ := backend.ReferTargetUser(cfg)
 	runtime.LogDebug(a.ctx, fmt.Sprintf("user [%v] is [%v]", userName, id))
 	_, ret := backend.ReferUserClips(cfg, id)
 	data := []backend.UserClip{}

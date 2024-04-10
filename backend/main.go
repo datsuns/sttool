@@ -204,9 +204,14 @@ func (c *BackendContext) GetOverlayPortNumber() int {
 }
 
 func (c *BackendContext) Serve() {
+	var err error
 	path := buildLogPath(c.Config)
 	logger, statsLogger = buildLogger(c.Config, path, c.Config.DebugMode)
-	c.Config.TargetUserId = ReferTargetUserId(c.Config)
+	c.Config.TargetUserId, err = ReferTargetUserId(c.Config)
+	if err != nil {
+		logger.Error("ReferTargetUserId", slog.Any("ERR", err.Error()))
+		return
+	}
 	statsLogger.Info("ToolVersion", slog.Any(LogFieldName_Type, "ToolVersion"), slog.Any("value", ToolVersion))
 
 	c.Stats = NewTwitchStats()
