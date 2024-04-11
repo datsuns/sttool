@@ -7,7 +7,7 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-type Config struct {
+type ConfigBody struct {
 	TargetUser                   string   `yaml:"SUBSCRIBE_USER"`
 	AuthCode                     string   `yaml:"AUTH_CODE"`
 	ClientId                     string   `yaml:"CLIENT_ID"`
@@ -23,22 +23,28 @@ type Config struct {
 	LocalServerPortNumber        int      `yaml:"SERVER_PORT"`
 	ClipPlayIntervalMarginSecond int      `yaml:"CLIP_MARGIN_SECOND"`
 	OverlayEnabled               bool     `yaml:"OVERLAY_ENABLE"`
-	TargetUserId                 string
-	StatsLogPath                 string
-	RaidLogPath                  string
+}
+
+type Config struct {
+	Body         ConfigBody
+	TargetUserId string
+	StatsLogPath string
+	RaidLogPath  string
 }
 
 func loadConfigFrom(raw []byte) (*Config, error) {
 	ret := &Config{
-		NotifySoundFile:              NotifySoundDefault,
-		LogDest:                      ".",
-		DelayMinutesFromRaidToStop:   3,
-		NewClipWatchIntervalSecond:   128,
-		LocalServerPortNumber:        8930,
-		ClipPlayIntervalMarginSecond: 8,
-		OverlayEnabled:               false,
+		Body: ConfigBody{
+			NotifySoundFile:              NotifySoundDefault,
+			LogDest:                      ".",
+			DelayMinutesFromRaidToStop:   3,
+			NewClipWatchIntervalSecond:   128,
+			LocalServerPortNumber:        8930,
+			ClipPlayIntervalMarginSecond: 8,
+			OverlayEnabled:               false,
+		},
 	}
-	if e := yaml.Unmarshal(raw, ret); e != nil {
+	if e := yaml.Unmarshal(raw, &ret.Body); e != nil {
 		return nil, e
 	}
 	ret.StatsLogPath = StatsLogPath
@@ -57,4 +63,73 @@ func LoadConfig() (*Config, error) {
 		return nil, e
 	}
 	return loadConfigFrom(b)
+}
+
+func (c *Config) Save() error {
+	var err error
+	ret, err := yaml.Marshal(c.Body)
+	if err != nil {
+		return err
+	}
+	err = os.WriteFile(ConfigFilePath, ret, 0644)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (c *Config) TargetUser() string {
+	return c.Body.TargetUser
+}
+
+func (c *Config) AuthCode() string {
+	return c.Body.AuthCode
+}
+
+func (c *Config) ClientId() string {
+	return c.Body.ClientId
+}
+
+func (c *Config) IsDebug() bool {
+	return c.Body.DebugMode
+}
+
+func (c *Config) IsLocalTest() bool {
+	return c.Body.LocalTest
+}
+
+func (c *Config) LocalPortNum() int {
+	return c.Body.LocalServerPortNumber
+}
+
+func (c *Config) LogPath() string {
+	return c.Body.LogDest
+}
+
+func (c *Config) DelayFromRaidToStop() int {
+	return c.Body.DelayMinutesFromRaidToStop
+}
+
+func (c *Config) OverlayEnabled() bool {
+	return c.Body.OverlayEnabled
+}
+
+func (c *Config) ClipPlayIntervalMargin() int {
+	return c.Body.ClipPlayIntervalMarginSecond
+}
+
+func (c *Config) NotifySoundFilePath() string {
+	return c.Body.NotifySoundFile
+}
+
+func (c *Config) ClipWatchInterval() int {
+	return c.Body.NewClipWatchIntervalSecond
+}
+
+func (c *Config) ObsUrl() string {
+	return c.Body.ObsUrl
+}
+
+func (c *Config) ObsPass() string {
+	return c.Body.ObsPass
 }

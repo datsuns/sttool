@@ -66,7 +66,7 @@ func showNotification(user, url, at string) {
 
 func StartWatcher(cfg *Config, done chan struct{}) {
 	go func() {
-		ticker := time.NewTicker(time.Second * time.Duration(cfg.NewClipWatchIntervalSecond))
+		ticker := time.NewTicker(time.Second * time.Duration(cfg.ClipWatchInterval()))
 		defer ticker.Stop()
 		//byDate := time.Date(2024, 2, 1, 9, 0, 0, 0, time.Local)
 		byDate := time.Now()
@@ -77,7 +77,7 @@ func StartWatcher(cfg *Config, done chan struct{}) {
 			case <-ticker.C:
 				ret, raw := referUserClipsByDate(cfg, cfg.TargetUserId, false, &byDate)
 				if len(ret) > 0 {
-					playSound(cfg.NotifySoundFile)
+					playSound(cfg.NotifySoundFilePath())
 					showNotification(raw.Data[0].CreatorName, raw.Data[0].Url, raw.Data[0].CreatedAt)
 					statsLogger.Info("NewClip",
 						slog.Any(LogFieldName_Type, "新規クリップ"),

@@ -77,8 +77,8 @@ func NewOverlay(cfg *Config) *OverlayContext {
 	ret := &OverlayContext{
 		ChannStartClip:   make(chan struct{}),
 		ChannStopClip:    make(chan struct{}),
-		ServerPort:       cfg.LocalServerPortNumber,
-		PlayMarginSecond: cfg.ClipPlayIntervalMarginSecond,
+		ServerPort:       cfg.LocalPortNum(),
+		PlayMarginSecond: cfg.ClipPlayIntervalMargin(),
 		ClipContext:      nil,
 	}
 	return ret
@@ -164,5 +164,5 @@ func (o *OverlayContext) Main(serverPort int) {
 }
 
 func (o *OverlayContext) Serve(cfg *Config) {
-	go func() { o.Main(cfg.LocalServerPortNumber) }()
+	go func() { o.Main(cfg.LocalPortNum()) }()
 }

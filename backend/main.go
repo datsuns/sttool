@@ -80,7 +80,7 @@ func receive(cfg *Config, conn *websocket.Conn) (*Responce, []byte, error) {
 		logger.Error("ReadMessage " + err.Error())
 		return nil, nil, err
 	}
-	if cfg.DebugMode {
+	if cfg.IsDebug() {
 		logger.Info("receive", "raw", string(message))
 	}
 	err = json.Unmarshal(message, &r)
@@ -93,7 +93,7 @@ func receive(cfg *Config, conn *websocket.Conn) (*Responce, []byte, error) {
 
 // https://dev.twitch.tv/docs/eventsub/eventsub-subscription-types/#subscription-types
 func handleSessionWelcome(cfg *Config, r *Responce, _ []byte, _ *TwitchStats) {
-	if cfg.LocalTest {
+	if cfg.IsLocalTest() {
 		return
 	}
 	for k, v := range TwitchEventTable {
@@ -147,20 +147,20 @@ func progress(ctx *BackendContext, _ *chan struct{}, cfg *Config, conn *websocke
 }
 
 func buildLogPath(cfg *Config) string {
-	if _, e := os.Stat(cfg.LogDest); e != nil {
-		os.MkdirAll(cfg.LogDest, 0750)
+	if _, e := os.Stat(cfg.LogPath()); e != nil {
+		os.MkdirAll(cfg.LogPath(), 0750)
 	}
-	if cfg.LocalTest {
-		return filepath.Join(cfg.LogDest, "local.test.txt")
+	if cfg.IsLocalTest() {
+		return filepath.Join(cfg.LogPath(), "local.test.txt")
 	}
 	n := time.Now()
-	return filepath.Join(cfg.LogDest, fmt.Sprintf("%v.txt", n.Format("20060102")))
+	return filepath.Join(cfg.LogPath(), fmt.Sprintf("%v.txt", n.Format("20060102")))
 }
 
 func buildLogger(c *Config, logPath string, debug bool) (*slog.Logger, *slog.Logger) {
 	log, _ := os.OpenFile(logPath, os.O_APPEND|os.O_RDWR|os.O_CREATE, 0666)
 	runlog, _ := os.OpenFile(
-		filepath.Join(c.LogDest, "debug.txt"),
+		filepath.Join(c.LogPath(), "debug.txt"),
 		os.O_APPEND|os.O_RDWR|os.O_CREATE, 0666)
 	if debug {
 		return slog.New(
@@ -195,18 +195,19 @@ func NewBackend(callback *CallBack) *BackendContext {
 		panic(err)
 	}
 	ctx.Config = cfg
+	cfg.Save()
 	ctx.Overlay = NewOverlay(cfg)
 	return ctx
 }
 
 func (c *BackendContext) GetOverlayPortNumber() int {
-	return c.Config.LocalServerPortNumber
+	return c.Config.LocalPortNum()
 }
 
 func (c *BackendContext) Serve() {
 	var err error
 	path := buildLogPath(c.Config)
-	logger, statsLogger = buildLogger(c.Config, path, c.Config.DebugMode)
+	logger, statsLogger = buildLogger(c.Config, path, c.Config.IsDebug())
 	c.Config.TargetUserId, err = ReferTargetUserId(c.Config)
 	if err != nil {
 		logger.Error("ReferTargetUserId", slog.Any("ERR", err.Error()))
@@ -219,7 +220,7 @@ func (c *BackendContext) Serve() {
 	interrupt := make(chan os.Signal, 1)
 	signal.Notify(interrupt, os.Interrupt)
 
-	conn, _ := connect(c.Config.LocalTest)
+	conn, _ := connect(c.Config.IsLocalTest())
 	defer conn.Close()
 
 	done := make(chan struct{})
@@ -228,7 +229,7 @@ func (c *BackendContext) Serve() {
 		progress(c, &done, c.Config, conn, c.Stats)
 	}()
 	StartWatcher(c.Config, done)
-	if c.Config.OverlayEnabled {
+	if c.Config.OverlayEnabled() {
 		c.Overlay.Serve(c.Config)
 	}
 

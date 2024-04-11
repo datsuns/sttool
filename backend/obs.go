@@ -7,7 +7,7 @@ import (
 )
 
 func StopObsStream(cfg *Config) {
-	client, err := goobs.New(cfg.ObsUrl, goobs.WithPassword(cfg.ObsPass))
+	client, err := goobs.New(cfg.ObsUrl(), goobs.WithPassword(cfg.ObsPass()))
 	if err != nil {
 		logger.Error("OBS Connect ERROR", slog.Any("err", err.Error()))
 		return

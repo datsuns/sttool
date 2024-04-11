@@ -168,7 +168,7 @@ func handleNotificationChannelCheer(_ *BackendContext, _ *Config, r *Responce, r
 
 func handleNotificationStreamOnline(_ *BackendContext, cfg *Config, r *Responce, raw []byte, s *TwitchStats) {
 	path := buildLogPath(cfg)
-	_, statsLogger = buildLogger(cfg, path, cfg.DebugMode)
+	_, statsLogger = buildLogger(cfg, path, cfg.IsDebug())
 
 	v := &ResponceStreamOnline{}
 	err := json.Unmarshal(raw, &v)
@@ -359,7 +359,7 @@ func handleNotificationRaidStarted(_ *BackendContext, cfg *Config, r *Responce, 
 	)
 	go func() {
 		logger.Info("StopStream Start")
-		ticker := time.NewTicker(time.Minute * time.Duration(cfg.DelayMinutesFromRaidToStop))
+		ticker := time.NewTicker(time.Minute * time.Duration(cfg.DelayFromRaidToStop()))
 		<-ticker.C
 		StopObsStream(cfg)
 		logger.Info("StopStream End")

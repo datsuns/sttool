@@ -15,12 +15,12 @@ func issueEventSubRequest(cfg *Config, method, url string, body io.Reader) ([]by
 	if err != nil {
 		return nil, err
 	}
-	if cfg.DebugMode {
-		logger.Info("rest auth", "Auth", cfg.AuthCode, "ClientID", cfg.ClientId)
+	if cfg.IsDebug() {
+		logger.Info("rest auth", "Auth", cfg.AuthCode(), "ClientID", cfg.ClientId())
 	}
-	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", cfg.AuthCode))
+	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", cfg.AuthCode()))
 	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("Client-Id", cfg.ClientId)
+	req.Header.Set("Client-Id", cfg.ClientId())
 
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
@@ -32,7 +32,7 @@ func issueEventSubRequest(cfg *Config, method, url string, body io.Reader) ([]by
 	if err != nil {
 		return nil, err
 	}
-	if cfg.DebugMode {
+	if cfg.IsDebug() {
 		logger.Info("request", "Status", resp.Status, "URL", url, "RawRet", string(byteArray))
 	}
 	switch resp.StatusCode {
@@ -68,8 +68,12 @@ func referTargetUserIdWith(cfg *Config, username string) (string, string, string
 	return r.Data[0].Id, r.Data[0].Login, r.Data[0].DisplayName, nil
 }
 
+func ConfirmUserAccessToken(cfg *Config) error {
+	return nil
+}
+
 func ReferTargetUserId(cfg *Config) (string, error) {
-	id, _, _, err := referTargetUserIdWith(cfg, cfg.TargetUser)
+	id, _, _, err := referTargetUserIdWith(cfg, cfg.TargetUser())
 	if err != nil {
 		return "", err
 	}
@@ -77,7 +81,7 @@ func ReferTargetUserId(cfg *Config) (string, error) {
 }
 
 func ReferTargetUser(cfg *Config) (string, string, string, error) {
-	return referTargetUserIdWith(cfg, cfg.TargetUser)
+	return referTargetUserIdWith(cfg, cfg.TargetUser())
 }
 
 func ReferUserClips(cfg *Config, userId string) (string, *GetClipsApiResponce) {
