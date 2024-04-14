@@ -8,8 +8,6 @@ import (
 )
 
 type ConfigBody struct {
-	ClientId                     string   `yaml:"CLIENT_ID"`
-	ClientSecret                 string   `yaml:"CLIENT_SECRET"`
 	ChatTargets                  []string `yaml:"CHART_TARGETS"`
 	NotifySoundFile              string   `yaml:"NOTIFY_SOUND"`
 	DebugMode                    bool     `yaml:"DEBUG"`
@@ -27,21 +25,23 @@ type ConfigBody struct {
 type AuthEntry struct {
 	AuthCode     string `yaml:"AUTH_CODE"`
 	RefreshToken string `yaml:"REFRESH_TOKEN"`
+	ClientId     string `yaml:"CLIENT_ID"`
+	ClientSecret string `yaml:"CLIENT_SECRET"`
 }
 
 type Config struct {
-	Body         ConfigBody
-	Auth         AuthEntry
-	TargetUser   string
-	TargetUserId string
-	StatsLogPath string
-	RaidLogPath  string
+	Body            ConfigBody
+	Auth            AuthEntry
+	AppClientId     string
+	AppClientSecret string
+	TargetUser      string
+	TargetUserId    string
+	StatsLogPath    string
+	RaidLogPath     string
 }
 
 var (
 	DefaultConfig = ConfigBody{
-		ClientId:                     "",
-		ClientSecret:                 "",
 		ChatTargets:                  []string{},
 		NotifySoundFile:              NotifySoundDefault,
 		DebugMode:                    false,
@@ -97,6 +97,8 @@ func LoadConfig() (*Config, error) {
 func (c *Config) Init() {
 	c.Body = DefaultConfig
 	c.Auth = AuthEntry{AuthCode: "", RefreshToken: ""}
+	c.AppClientId = AppClientID
+	c.AppClientSecret = AppClientSecret
 	c.StatsLogPath = StatsLogPath
 	c.RaidLogPath = RaidLogPath
 }
@@ -159,11 +161,11 @@ func (c *Config) RefreshToken() string {
 }
 
 func (c *Config) ClientId() string {
-	return c.Body.ClientId
+	return c.AppClientId
 }
 
 func (c *Config) ClientSecret() string {
-	return c.Body.ClientSecret
+	return c.AppClientSecret
 }
 
 func (c *Config) IsDebug() bool {
