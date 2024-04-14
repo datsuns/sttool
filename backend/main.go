@@ -195,6 +195,9 @@ func NewBackend(callback *CallBack) *BackendContext {
 		panic(err)
 	}
 	ctx.Config = cfg
+	path := buildLogPath(cfg)
+	logger, statsLogger = buildLogger(cfg, path, cfg.IsDebug())
+	ctx.Stats = NewTwitchStats()
 	ctx.Overlay = NewOverlay(cfg)
 	return ctx
 }
@@ -204,16 +207,12 @@ func (c *BackendContext) GetOverlayPortNumber() int {
 }
 
 func (c *BackendContext) Serve() {
-	path := buildLogPath(c.Config)
-	logger, statsLogger = buildLogger(c.Config, path, c.Config.IsDebug())
 	statsLogger.Info("ToolVersion", slog.Any(LogFieldName_Type, "ToolVersion"), slog.Any("value", ToolVersion))
 	if e := ConfirmAccessToken(c.Config); e != nil {
 		logger.Error("Serve", slog.Any("msg", "ConfirmAccessToken"), slog.Any("ERR", e.Error()))
 		return
 	}
 	statsLogger.Info("Start", slog.Any(LogFieldName_Type, "TargetUser"), slog.Any("name", c.Config.UserName()), slog.Any("id", c.Config.UserId()))
-
-	c.Stats = NewTwitchStats()
 
 	interrupt := make(chan os.Signal, 1)
 	signal.Notify(interrupt, os.Interrupt)
