@@ -14,6 +14,31 @@ import (
 	"github.com/pkg/browser"
 )
 
+func issueRequest(r *http.Request, debug bool) ([]byte, int, error) {
+	resp, err := http.DefaultClient.Do(r)
+	if err != nil {
+		logger.Error("issueRequest::http.DefaultClient.Do", slog.Any("ERR", err.Error()))
+		return nil, 0, err
+	}
+	defer resp.Body.Close()
+
+	byteArray, err := io.ReadAll(resp.Body)
+	if err != nil {
+		logger.Error("issueRequest::io.ReadAll", slog.Any("ERR", err.Error()))
+		return nil, 0, err
+	}
+	if debug {
+		logger.Info("issueRequest", slog.Any("Status", resp.Status), slog.Any("URL", r.RequestURI), slog.Any("RawRet", string(byteArray)))
+	}
+	switch resp.StatusCode {
+	case 200:
+	case 202:
+	default:
+		return nil, resp.StatusCode, fmt.Errorf("error responce. status[%v] msg[%v]", resp.StatusCode, string(byteArray))
+	}
+	return byteArray, resp.StatusCode, nil
+}
+
 func issueEventSubRequest(cfg *Config, method, url string, body io.Reader) ([]byte, int, error) {
 	req, err := http.NewRequest(method, url, body)
 	if err != nil {
@@ -27,28 +52,7 @@ func issueEventSubRequest(cfg *Config, method, url string, body io.Reader) ([]by
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("Client-Id", cfg.ClientId())
 
-	resp, err := http.DefaultClient.Do(req)
-	if err != nil {
-		logger.Error("issueEventSubRequest::http.DefaultClient.Do", slog.Any("ERR", err.Error()))
-		return nil, 0, err
-	}
-	defer resp.Body.Close()
-
-	byteArray, err := io.ReadAll(resp.Body)
-	if err != nil {
-		logger.Error("issueEventSubRequest::io.ReadAll", slog.Any("ERR", err.Error()))
-		return nil, 0, err
-	}
-	if cfg.IsDebug() {
-		logger.Info("request", "Status", resp.Status, "URL", url, "RawRet", string(byteArray))
-	}
-	switch resp.StatusCode {
-	case 200:
-	case 202:
-	default:
-		return nil, resp.StatusCode, fmt.Errorf("error responce. status[%v] msg[%v]", resp.StatusCode, string(byteArray))
-	}
-	return byteArray, resp.StatusCode, nil
+	return issueRequest(req, cfg.IsDebug())
 }
 
 // https://dev.twitch.tv/docs/authentication/getting-tokens-oauth/#authorization-code-grant-flow
@@ -87,6 +91,7 @@ func referTargetUserIdWith(cfg *Config, username string) (string, string, string
 }
 
 func RequestUserAccessToken(cfg *Config, code, redirectUri string) (string, string, error) {
+	var err error
 	params := url.Values{}
 	params.Add("Content-Type", "application/x-www-form-urlencoded")
 	params.Add("grant_type", "authorization_code")
@@ -101,27 +106,11 @@ func RequestUserAccessToken(cfg *Config, code, redirectUri string) (string, stri
 		return "", "", err
 	}
 
-	resp, err := http.DefaultClient.Do(req)
+	byteArray, _, err := issueRequest(req, cfg.IsDebug())
 	if err != nil {
-		logger.Error("RequestUserAccessToken::http.DefaultClient.Do", slog.Any("ERR", err.Error()))
 		return "", "", err
 	}
-	defer resp.Body.Close()
 
-	byteArray, err := io.ReadAll(resp.Body)
-	if err != nil {
-		logger.Error("RequestUserAccessToken::io.ReadAll", slog.Any("ERR", err.Error()))
-		return "", "", err
-	}
-	if cfg.IsDebug() {
-		logger.Info("RequestUserAccessToken", slog.Any("Status", resp.Status), slog.Any("RawRet", string(byteArray)))
-	}
-	switch resp.StatusCode {
-	case 200:
-	case 202:
-	default:
-		return "", "", fmt.Errorf("error responce. status[%v] msg[%v]", resp.StatusCode, string(byteArray))
-	}
 	r := &RequestTokenByCodeResponce{}
 	err = json.Unmarshal(byteArray, &r)
 	if err != nil {
