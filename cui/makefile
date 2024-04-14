@@ -1,4 +1,4 @@
-BIN := csttool.exe
+BIN := twichevent.exe
 
 default: build
 
