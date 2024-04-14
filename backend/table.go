@@ -29,7 +29,7 @@ var (
 		"channel.subscription.message": {"再サブスク", "1", buildRequest, handleNotificationChannelSubscriptionMessage},   // channel:read:subscriptionsg",
 		"channel.chat.notification":    {"通知", "1", buildRequestWithUser, handleNotificationChannelChatNotification}, // user:read:chat
 		"channel.chat.message":         {"チャット", "1", buildRequestWithUser, handleNotificationChannelChatMessage},    // user:read:chat
-		"channel.raid":                 {"レイド開始", "1", buildRequestWithWithFromUser, handleNotificationRaidStarted},  // none
+		"channel.raid":                 {"レイド開始", "1", buildRequestWithFromUser, handleNotificationRaidStarted},      // none
 		"channel.follow":               {"フォロー", "2", buildRequestWithModerator, handleNotificationChannelFollow},    // moderator:read:followers
 		"channel.channel_points_custom_reward_redemption.add": {"チャネポ", "1", buildRequest, handleNotificationChannelPointsCustomRewardRedemptionAdd}, // channel:read:redemptions
 	}
@@ -99,7 +99,7 @@ func buildRequestWithUser(cfg *Config, r *Responce, subscType, version string) [
 	return bin
 }
 
-func buildRequestWithWithFromUser(cfg *Config, r *Responce, subscType, version string) []byte {
+func buildRequestWithFromUser(cfg *Config, r *Responce, subscType, version string) []byte {
 	c := RequestConditionWithFromUser{
 		FromBroadcasterUserId: cfg.TargetUserId,
 	}
