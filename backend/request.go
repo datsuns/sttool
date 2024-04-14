@@ -28,7 +28,7 @@ func issueRequest(r *http.Request, debug bool) ([]byte, int, error) {
 		return nil, 0, err
 	}
 	if debug {
-		logger.Info("issueRequest", slog.Any("Status", resp.Status), slog.Any("URL", r.RequestURI), slog.Any("RawRet", string(byteArray)))
+		logger.Info("issueRequest", slog.Any("Status", resp.Status), slog.Any("URL", r.URL), slog.Any("RawRet", string(byteArray)))
 	}
 	switch resp.StatusCode {
 	case 200:
@@ -118,6 +118,50 @@ func RequestUserAccessToken(cfg *Config, code, redirectUri string) (string, stri
 		return "", "", nil
 	}
 	return r.AccessToken, r.RefreshToken, nil
+}
+
+func RefreshAccessToken(cfg *Config, refreshToken string) (string, string, error) {
+	var err error
+	params := url.Values{}
+	params.Add("Content-Type", "application/x-www-form-urlencoded")
+	params.Add("client_id", cfg.ClientId())
+	params.Add("client_secret", cfg.ClientSecret())
+	params.Add("grant_type", "refresh_token")
+	params.Add("refresh_token", refreshToken)
+
+	req, err := http.NewRequest("POST", "https://id.twitch.tv/oauth2/token", bytes.NewBufferString(params.Encode()))
+	if err != nil {
+		logger.Error("RefreshAccessToken::http.NewRequest", slog.Any("ERR", err.Error()))
+		return "", "", err
+	}
+
+	byteArray, _, err := issueRequest(req, cfg.IsDebug())
+	if err != nil {
+		return "", "", err
+	}
+
+	r := &RefreshTokenResponce{}
+	err = json.Unmarshal(byteArray, &r)
+	if err != nil {
+		logger.Error("json.Unmarshal", "ERR", err.Error())
+		return "", "", nil
+	}
+	return r.AccessToken, r.RefreshToken, nil
+}
+
+func ValidateAccessToken(cfg *Config) (bool, error) {
+	req, err := http.NewRequest("GET", "https://id.twitch.tv/oauth2/validate", nil)
+	if err != nil {
+		logger.Error("ValidateAccessToken::http.NewRequest", slog.Any("ERR", err.Error()))
+		return false, err
+	}
+	req.Header.Set("Authorization", fmt.Sprintf("OAuth %s", cfg.AuthCode()))
+
+	_, statusCode, err := issueRequest(req, cfg.IsDebug())
+	if err != nil {
+		return false, err
+	}
+	return statusCode == 200, nil
 }
 
 func ReferTargetUserId(cfg *Config) (string, int, error) {
