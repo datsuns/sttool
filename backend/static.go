@@ -1,7 +1,7 @@
 package backend
 
 const (
-	ToolVersion = "1.2.0"
+	ToolVersion = "1.3.0"
 
 	LocalTestAddr          = "127.0.0.1:8080"
 	LocalTestScheme        = "ws"
