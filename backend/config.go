@@ -8,7 +8,6 @@ import (
 )
 
 type ConfigBody struct {
-	TargetUser                   string   `yaml:"SUBSCRIBE_USER"`
 	ClientId                     string   `yaml:"CLIENT_ID"`
 	ClientSecret                 string   `yaml:"CLIENT_SECRET"`
 	ChatTargets                  []string `yaml:"CHART_TARGETS"`
@@ -33,6 +32,7 @@ type AuthEntry struct {
 type Config struct {
 	Body         ConfigBody
 	Auth         AuthEntry
+	TargetUser   string
 	TargetUserId string
 	StatsLogPath string
 	RaidLogPath  string
@@ -40,7 +40,6 @@ type Config struct {
 
 var (
 	DefaultConfig = ConfigBody{
-		TargetUser:                   "",
 		ClientId:                     "",
 		ClientSecret:                 "",
 		ChatTargets:                  []string{},
@@ -143,8 +142,12 @@ func (c *Config) UpdatAccessToken(auth AuthEntry) {
 	c.Auth = auth
 }
 
-func (c *Config) TargetUser() string {
-	return c.Body.TargetUser
+func (c *Config) UserName() string {
+	return c.TargetUser
+}
+
+func (c *Config) UserId() string {
+	return c.TargetUserId
 }
 
 func (c *Config) AuthCode() string {

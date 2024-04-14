@@ -211,6 +211,7 @@ func (c *BackendContext) Serve() {
 		logger.Error("Serve", slog.Any("msg", "ConfirmAccessToken"), slog.Any("ERR", e.Error()))
 		return
 	}
+	statsLogger.Info("Start", slog.Any(LogFieldName_Type, "TargetUser"), slog.Any("name", c.Config.UserName()), slog.Any("id", c.Config.UserId()))
 
 	c.Stats = NewTwitchStats()
 

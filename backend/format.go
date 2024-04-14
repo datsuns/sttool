@@ -72,6 +72,14 @@ type RefreshTokenResponce struct {
 	TokenType    string   `json:"token_type"`
 }
 
+type ValidateTokenResponce struct {
+	ClientId  string   `json:"client_id"`
+	Login     string   `json:"login"`
+	Scopes    []string `json:"scopes"`
+	UserId    string   `json:"user_id"`
+	ExpiresIn int      `json:"expires_in"`
+}
+
 type GetUsersApiResponce struct {
 	Data []struct {
 		Id          string `json:"id"`

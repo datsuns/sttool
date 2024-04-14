@@ -149,23 +149,30 @@ func RefreshAccessToken(cfg *Config, refreshToken string) (string, string, error
 	return r.AccessToken, r.RefreshToken, nil
 }
 
-func ValidateAccessToken(cfg *Config) (bool, error) {
+func ValidateAccessToken(cfg *Config) (bool, string, string, error) {
 	req, err := http.NewRequest("GET", "https://id.twitch.tv/oauth2/validate", nil)
 	if err != nil {
 		logger.Error("ValidateAccessToken::http.NewRequest", slog.Any("ERR", err.Error()))
-		return false, err
+		return false, "", "", err
 	}
 	req.Header.Set("Authorization", fmt.Sprintf("OAuth %s", cfg.AuthCode()))
 
-	_, statusCode, err := issueRequest(req, cfg.IsDebug())
+	byteArray, statusCode, err := issueRequest(req, cfg.IsDebug())
 	if err != nil {
-		return false, err
+		return false, "", "", err
 	}
-	return statusCode == 200, nil
+
+	r := &ValidateTokenResponce{}
+	err = json.Unmarshal(byteArray, &r)
+	if err != nil {
+		logger.Error("json.Unmarshal", "ERR", err.Error())
+		return false, "", "", err
+	}
+	return statusCode == 200, r.Login, r.UserId, nil
 }
 
 func ReferTargetUserId(cfg *Config) (string, int, error) {
-	id, _, _, status, err := referTargetUserIdWith(cfg, cfg.TargetUser())
+	id, _, _, status, err := referTargetUserIdWith(cfg, cfg.UserName())
 	if err != nil {
 		return "", status, err
 	}
@@ -173,7 +180,7 @@ func ReferTargetUserId(cfg *Config) (string, int, error) {
 }
 
 func ReferTargetUser(cfg *Config) (string, string, string, int, error) {
-	return referTargetUserIdWith(cfg, cfg.TargetUser())
+	return referTargetUserIdWith(cfg, cfg.UserName())
 }
 
 func ReferUserClips(cfg *Config, userId string) (string, *GetClipsApiResponce) {
