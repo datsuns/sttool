@@ -1,6 +1,7 @@
 package backend
 
 import (
+	"context"
 	"fmt"
 	"log/slog"
 	"net/http"
@@ -20,17 +21,21 @@ func redirectHandler(w http.ResponseWriter, r *http.Request, fin chan struct{}) 
 
 func Issue1stTimeAuthentication(cfg *Config) error {
 	fin := make(chan struct{})
+	defer close(fin)
 	var code string
-	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+
+	mux := http.NewServeMux()
+	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		code = redirectHandler(w, r, fin)
 	})
-
+	server := &http.Server{
+		Addr:    "",
+		Handler: mux,
+	}
 	go func() {
-		if err := http.ListenAndServe(
-			"",
-			nil,
-		); err != nil {
-			logger.Error("Ovelay:ERROR", slog.Any("error", err.Error))
+		if err := server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+			logger.Error("Issue1stTimeAuthentication::start", slog.Any("error", err.Error))
+			fin <- struct{}{}
 		}
 	}()
 	time.Sleep(time.Second)
@@ -39,10 +44,20 @@ func Issue1stTimeAuthentication(cfg *Config) error {
 		return e
 	}
 	<-fin
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	if err := server.Shutdown(ctx); err != nil {
+		logger.Error("Issue1stTimeAuthentication::shutdown", slog.Any("error", err.Error))
+	}
+
 	a, r, _ := RequestUserAccessToken(cfg, code, AuthRedirectUri)
 	cfg.UpdatAccessToken(AuthEntry{AuthCode: a, RefreshToken: r})
 	cfg.Save()
 	logger.Info("Issue1stTimeAuthentication", slog.Any("code", code), slog.Any("access", a), slog.Any("refresh", r))
+	statsLogger.Info("Issue1stTimeAuthentication",
+		slog.Any(LogFieldName_Type, "ResetToken"),
+		slog.Any("code", code),
+	)
 	return nil
 }
 
