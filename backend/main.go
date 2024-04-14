@@ -182,7 +182,12 @@ func buildLogger(c *Config, logPath string, debug bool) (*slog.Logger, *slog.Log
 					slog.NewTextHandler(runlog, nil),
 				),
 			),
-			slog.New(NewTwitchInfoLogger(c, log))
+			slog.New(
+				slogmulti.Fanout(
+					slog.NewTextHandler(runlog, nil),
+					NewTwitchInfoLogger(c, log),
+				),
+			)
 	}
 }
 
