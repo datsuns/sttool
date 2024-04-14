@@ -106,15 +106,48 @@ func (c *Config) Init() {
 
 func (c *Config) Save() error {
 	var err error
-	ret, err := yaml.Marshal(c.Body)
+	body, err := yaml.Marshal(c.Body)
 	if err != nil {
 		return err
 	}
-	err = os.WriteFile(ConfigFilePath, ret, 0644)
+	err = os.WriteFile(ConfigFilePath, body, 0644)
+	if err != nil {
+		return err
+	}
+	auth, err := yaml.Marshal(c.Auth)
+	if err != nil {
+		return err
+	}
+	err = os.WriteFile(AuthInfoFile, auth, 0644)
 	if err != nil {
 		return err
 	}
 	return nil
+}
+
+func (c *Config) LoadAuthConfig() error {
+	var e error
+	f, e := os.Open(AuthInfoFile)
+	if e != nil {
+		return e
+	}
+	b, e := io.ReadAll(f)
+	if e != nil {
+		return e
+	}
+	if e := yaml.Unmarshal(b, &c.Auth); e != nil {
+		return e
+	}
+	return nil
+}
+
+func (c *Config) UpdatUserAccessToken(token string) {
+	c.Body.AuthCode = token
+	c.Auth.AuthCode = token
+}
+
+func (c *Config) UpdatRefreshToken(token string) {
+	c.Auth.RefreshToken = token
 }
 
 func (c *Config) TargetUser() string {

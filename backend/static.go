@@ -6,6 +6,7 @@ const (
 	LocalTestAddr          = "127.0.0.1:8080"
 	LocalTestScheme        = "ws"
 	ConfigFilePath         = "config.yaml"
+	AuthInfoFile           = ".auth.yaml"
 	LogFieldName_Type      = "type"
 	LogFieldName_UserName  = "user"
 	LogFieldName_LoginName = "login"
