@@ -19,6 +19,8 @@ type ConfigBody struct {
 	NewClipWatchIntervalSecond int      `yaml:"NEW_CLIP_INTERVAL"`
 	LocalServerPortNumber      int      `yaml:"SERVER_PORT"`
 	OverlayEnabled             bool     `yaml:"OVERLAY_ENABLE"`
+	ClipPlayerWidth            int      `yaml:"CLIP_PLAYER_WIDTH"`
+	ClipPlayerHeight           int      `yaml:"CLIP_PLAYER_HEIGHT"`
 }
 
 type AuthEntry struct {
@@ -50,6 +52,8 @@ var (
 		NewClipWatchIntervalSecond: 128,
 		LocalServerPortNumber:      8930,
 		OverlayEnabled:             false,
+		ClipPlayerWidth:            640,
+		ClipPlayerHeight:           480,
 	}
 )
 
@@ -205,4 +209,12 @@ func (c *Config) ObsUrl() string {
 
 func (c *Config) ObsPass() string {
 	return c.Body.ObsPass
+}
+
+func (c *Config) CipWidth() int {
+	return c.Body.ClipPlayerWidth
+}
+
+func (c *Config) CipHeight() int {
+	return c.Body.ClipPlayerHeight
 }

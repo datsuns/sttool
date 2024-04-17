@@ -31,7 +31,7 @@ const OverlayHtml = `
             console.log('start play');
             const data = JSON.parse(event.data);
             container.innerHTML = ` +
-	"`<video id=\"clip-player-body\" autoplay width=\"640\" height=\"480\"> <source src=\"${data.src}\"> </video>`;" +
+	"`<video id=\"clip-player-body\" autoplay width=\"${data.width}\" height=\"${data.height}\"> <source src=\"${data.src}\"> </video>`;" +
 	`
             const player = document.getElementById('clip-player-body');
             player.addEventListener('ended', function () {
@@ -87,7 +87,7 @@ func (o *OverlayContext) StopClip() {
 	logger.Info("Overlay:forceStop")
 }
 
-func (o *OverlayContext) OnEvent(w http.ResponseWriter, r *http.Request) {
+func (o *OverlayContext) OnEvent(w http.ResponseWriter, r *http.Request, clipWidth, clipHeight int) {
 	w.Header().Set("Content-Type", "text/event-stream")
 	w.Header().Set("Cache-Control", "no-cache")
 	w.Header().Set("Connection", "keep-alive")
@@ -96,7 +96,10 @@ func (o *OverlayContext) OnEvent(w http.ResponseWriter, r *http.Request) {
 	case <-o.ChannStartClip:
 		//src := buildSrcUrl(o.ClipId)
 		src := o.ClipUrl
-		fmt.Fprintf(w, "event: on\ndata: {\"src\": \"%s\"}\n\n", src)
+		fmt.Fprintf(w,
+			"event: on\ndata: {\"src\": \"%s\", \"width\": \"%v\", \"height\": \"%v\"}\n\n",
+			src, clipWidth, clipHeight,
+		)
 		logger.Info("Ovelay:ON", slog.Any("clip ID", o.ClipUrl), slog.Any("URL", src))
 	case <-o.ChannStopClip:
 		fmt.Fprintf(w, "event: off\ndata: {}\n\n")
@@ -110,10 +113,10 @@ func (o *OverlayContext) OnEvent(w http.ResponseWriter, r *http.Request) {
 
 }
 
-func (o *OverlayContext) Main(serverPort int) {
+func (o *OverlayContext) Main(serverPort, clipWidth, clipHeight int) {
 	logger.Info("Ovelay:Start")
 	http.HandleFunc("/events", func(w http.ResponseWriter, r *http.Request) {
-		o.OnEvent(w, r)
+		o.OnEvent(w, r, clipWidth, clipHeight)
 	})
 	http.HandleFunc("/", rootDocument)
 
@@ -128,5 +131,11 @@ func (o *OverlayContext) Main(serverPort int) {
 }
 
 func (o *OverlayContext) Serve(cfg *Config) {
-	go func() { o.Main(cfg.LocalPortNum()) }()
+	go func() {
+		o.Main(
+			cfg.LocalPortNum(),
+			cfg.CipWidth(),
+			cfg.CipHeight(),
+		)
+	}()
 }
