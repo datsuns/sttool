@@ -8,18 +8,17 @@ import (
 )
 
 type ConfigBody struct {
-	ChatTargets                  []string `yaml:"CHART_TARGETS"`
-	NotifySoundFile              string   `yaml:"NOTIFY_SOUND"`
-	DebugMode                    bool     `yaml:"DEBUG"`
-	LocalTest                    bool     `yaml:"LOCAL_TEST"`
-	LogDest                      string   `yaml:"LOG_DEST"`
-	ObsUrl                       string   `yaml:"OBS_URL"`
-	ObsPass                      string   `yaml:"OBS_PASS"`
-	DelayMinutesFromRaidToStop   int      `yaml:"DELAY_TO_STOP"`
-	NewClipWatchIntervalSecond   int      `yaml:"NEW_CLIP_INTERVAL"`
-	LocalServerPortNumber        int      `yaml:"SERVER_PORT"`
-	ClipPlayIntervalMarginSecond int      `yaml:"CLIP_MARGIN_SECOND"`
-	OverlayEnabled               bool     `yaml:"OVERLAY_ENABLE"`
+	ChatTargets                []string `yaml:"CHART_TARGETS"`
+	NotifySoundFile            string   `yaml:"NOTIFY_SOUND"`
+	DebugMode                  bool     `yaml:"DEBUG"`
+	LocalTest                  bool     `yaml:"LOCAL_TEST"`
+	LogDest                    string   `yaml:"LOG_DEST"`
+	ObsUrl                     string   `yaml:"OBS_URL"`
+	ObsPass                    string   `yaml:"OBS_PASS"`
+	DelayMinutesFromRaidToStop int      `yaml:"DELAY_TO_STOP"`
+	NewClipWatchIntervalSecond int      `yaml:"NEW_CLIP_INTERVAL"`
+	LocalServerPortNumber      int      `yaml:"SERVER_PORT"`
+	OverlayEnabled             bool     `yaml:"OVERLAY_ENABLE"`
 }
 
 type AuthEntry struct {
@@ -40,18 +39,17 @@ type Config struct {
 
 var (
 	DefaultConfig = ConfigBody{
-		ChatTargets:                  []string{},
-		NotifySoundFile:              NotifySoundDefault,
-		DebugMode:                    false,
-		LocalTest:                    false,
-		LogDest:                      ".",
-		ObsUrl:                       "",
-		ObsPass:                      "",
-		DelayMinutesFromRaidToStop:   3,
-		NewClipWatchIntervalSecond:   128,
-		LocalServerPortNumber:        8930,
-		ClipPlayIntervalMarginSecond: 8,
-		OverlayEnabled:               false,
+		ChatTargets:                []string{},
+		NotifySoundFile:            NotifySoundDefault,
+		DebugMode:                  false,
+		LocalTest:                  false,
+		LogDest:                    ".",
+		ObsUrl:                     "",
+		ObsPass:                    "",
+		DelayMinutesFromRaidToStop: 3,
+		NewClipWatchIntervalSecond: 128,
+		LocalServerPortNumber:      8930,
+		OverlayEnabled:             false,
 	}
 )
 
@@ -191,10 +189,6 @@ func (c *Config) DelayFromRaidToStop() int {
 
 func (c *Config) OverlayEnabled() bool {
 	return c.Body.OverlayEnabled
-}
-
-func (c *Config) ClipPlayIntervalMargin() int {
-	return c.Body.ClipPlayIntervalMarginSecond
 }
 
 func (c *Config) NotifySoundFilePath() string {

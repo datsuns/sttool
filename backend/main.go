@@ -17,6 +17,7 @@ import (
 type UserClip struct {
 	Id        string
 	Url       string
+	Mp4       string
 	Title     string
 	Thumbnail string
 	ViewCount int

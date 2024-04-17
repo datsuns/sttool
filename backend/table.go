@@ -289,6 +289,7 @@ func handleNotificationChannelChatNotificationRaid(ctx *BackendContext, cfg *Con
 			Title:     c.Title,
 			ViewCount: c.ViewCount,
 			Duration:  c.Duration,
+			Mp4:       ConvertThumbnailToMp4Url(c.ThumbnailUrl),
 		})
 	}
 	ctx.CallBack.OnRaid(p)

@@ -33,8 +33,8 @@
     await DebugRaidTest(dbg_RaidUser);
   };
 
-  function startClipTest(id, duration) {
-    StartClip(id, duration).then((result) => LogPrint("Clip finished"));
+  function startClipTest(url, duration) {
+    StartClip(url, duration).then((result) => LogPrint("Clip finished"));
   }
 
   const stopClipTest = async () => {
@@ -46,7 +46,7 @@
     let entry = { name: username, body: items };
     LogPrint(`raid from ${username}`);
     items.forEach((c) => {
-      LogPrint(`user clip [${c.Title}], url [${c.Thumbnail}]`);
+      LogPrint(`user clip [${c.Title}], url [${c.Thumbnail}], mp4 [${c.Mp4}]`);
     });
     Clips = [...Clips, entry];
   });
@@ -77,7 +77,7 @@
           <Card style="height: 100%;">
             <PrimaryAction
               style="height: 100%;"
-              on:click={() => startClipTest(c.Id, c.Duration)}
+              on:click={() => startClipTest(c.Mp4, c.Duration)}
             >
               <Media class="card-media-16x9" aspectRatio="16x9">
                 <MediaContent>
@@ -88,7 +88,9 @@
                 <div class="my-clip-title">{c.Title}</div>
               </Content>
               <Content>
-                <div class="my-viewcount">再生数:{c.ViewCount}</div>
+                <div class="my-viewcount">
+                  再生数:{c.ViewCount} / 時間:{c.Duration}
+                </div>
               </Content>
             </PrimaryAction>
           </Card>
