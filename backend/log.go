@@ -71,7 +71,7 @@ func (t *TwitchInfoLogger) Handle(c context.Context, r slog.Record) error {
 		if k == LogFieldName_Type {
 			continue
 		}
-		log += fmt.Sprintf("%v:%v%v", k, v, logSplit)
+		log += fmt.Sprintf("%v:%v%v", k, v, LogTextSplit)
 	}
 	log += "\n"
 	t.w.Write([]byte(log))

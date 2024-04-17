@@ -37,9 +37,9 @@ var (
 
 func typeToLogTitle(t string) string {
 	if s, exists := TwitchEventTable[t]; exists {
-		return s.LogTitle + logSplit
+		return s.LogTitle + LogTextSplit
 	} else {
-		return fmt.Sprintf("%v%v", t, logSplit)
+		return fmt.Sprintf("%v%v", t, LogTextSplit)
 	}
 }
 

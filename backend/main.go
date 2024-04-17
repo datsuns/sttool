@@ -44,25 +44,18 @@ type BackendContext struct {
 var (
 	logger      *slog.Logger
 	statsLogger *slog.Logger
-	logSplit    = "   "
-
-	scheme = "wss"
-	addr   = "eventsub.wss.twitch.tv"
-
-	path      = "/ws"
-	keepalive = "30"
 )
 
 func buildQuery() string {
-	return fmt.Sprintf("keepalive_timeout_seconds=%v", keepalive)
+	return fmt.Sprintf("keepalive_timeout_seconds=%v", KeepAliveSecond)
 }
 
 func connect(localTest bool) (*websocket.Conn, error) {
 	var u url.URL
 	if localTest {
-		u = url.URL{Scheme: LocalTestScheme, Host: LocalTestAddr, Path: path, RawQuery: buildQuery()}
+		u = url.URL{Scheme: LocalTestScheme, Host: LocalTestAddr, Path: ConnectPath, RawQuery: buildQuery()}
 	} else {
-		u = url.URL{Scheme: scheme, Host: addr, Path: path, RawQuery: buildQuery()}
+		u = url.URL{Scheme: GlobalScheme, Host: GlobalHost, Path: ConnectPath, RawQuery: buildQuery()}
 	}
 	logger.Info("connecting to " + u.String())
 
