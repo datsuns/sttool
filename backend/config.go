@@ -25,8 +25,6 @@ type ConfigBody struct {
 type AuthEntry struct {
 	AuthCode     string `yaml:"AUTH_CODE"`
 	RefreshToken string `yaml:"REFRESH_TOKEN"`
-	ClientId     string `yaml:"CLIENT_ID"`
-	ClientSecret string `yaml:"CLIENT_SECRET"`
 }
 
 type Config struct {
@@ -96,7 +94,10 @@ func LoadConfig() (*Config, error) {
 
 func (c *Config) Init() {
 	c.Body = DefaultConfig
-	c.Auth = AuthEntry{AuthCode: "", RefreshToken: ""}
+	c.Auth = AuthEntry{
+		AuthCode:     "",
+		RefreshToken: "",
+	}
 	c.AppClientId = AppClientID
 	c.AppClientSecret = AppClientSecret
 	c.StatsLogPath = StatsLogPath
