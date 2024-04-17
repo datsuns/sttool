@@ -11,7 +11,7 @@ type OverlayContext struct {
 	ChannStopClip    chan struct{}
 	ServerPort       int
 	PlayMarginSecond int
-	ClipId           string
+	ClipUrl          string
 }
 
 const OverlayHtml = `
@@ -73,13 +73,13 @@ func buildSrcUrl(clipID string) string {
 }
 
 func (o *OverlayContext) StartClip(url string, duration float32) {
-	o.ClipId = url
+	o.ClipUrl = url
 	o.ChannStartClip <- struct{}{}
 	logger.Info("Overlay:StartClip", slog.Any("url", url), slog.Any("clip time", duration))
 }
 
 func (o *OverlayContext) StopClip() {
-	if o.ClipId == "" {
+	if o.ClipUrl == "" {
 		logger.Info("Overlay", slog.Any("msg", "clip already stopped"))
 		return
 	}
@@ -95,9 +95,9 @@ func (o *OverlayContext) OnEvent(w http.ResponseWriter, r *http.Request) {
 	select {
 	case <-o.ChannStartClip:
 		//src := buildSrcUrl(o.ClipId)
-		src := o.ClipId
+		src := o.ClipUrl
 		fmt.Fprintf(w, "event: on\ndata: {\"src\": \"%s\"}\n\n", src)
-		logger.Info("Ovelay:ON", slog.Any("clip ID", o.ClipId), slog.Any("URL", src))
+		logger.Info("Ovelay:ON", slog.Any("clip ID", o.ClipUrl), slog.Any("URL", src))
 	case <-o.ChannStopClip:
 		fmt.Fprintf(w, "event: off\ndata: {}\n\n")
 		logger.Info("Ovelay:OFF")

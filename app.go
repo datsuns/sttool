@@ -30,8 +30,8 @@ func (a *App) startup(ctx context.Context) {
 	go a.Backend.Serve()
 }
 
-func (a *App) StartClip(id string, duration float32) {
-	a.Backend.Overlay.StartClip(id, duration)
+func (a *App) StartClip(url string, duration float32) {
+	a.Backend.Overlay.StartClip(url, duration)
 }
 
 func (a *App) StopClip() {
