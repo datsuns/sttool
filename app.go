@@ -70,6 +70,7 @@ func (a *App) DebugAppendEntry() {
 func (a *App) DebugRaidTest(userName string) {
 	runtime.LogDebug(a.ctx, fmt.Sprintf("start DebugRaid w/ [%v]", userName))
 	cfg, _ := backend.LoadConfig()
+	cfg.LoadAuthConfig()
 	cfg.TargetUser = userName
 	id, _, diplayName, _, _ := backend.ReferTargetUser(cfg)
 	runtime.LogDebug(a.ctx, fmt.Sprintf("user [%v] is [%v]", userName, id))
@@ -83,6 +84,7 @@ func (a *App) DebugRaidTest(userName string) {
 			ViewCount: c.ViewCount,
 			Title:     c.Title,
 			Duration:  c.Duration,
+			Mp4:       backend.ConvertThumbnailToMp4Url(c.ThumbnailUrl),
 		})
 		runtime.LogDebug(a.ctx, fmt.Sprintf("found clip [%v]", c.Title))
 	}
