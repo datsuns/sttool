@@ -158,6 +158,9 @@ func ValidateAccessToken(cfg *Config) (bool, string, string, error) {
 	req.Header.Set("Authorization", fmt.Sprintf("OAuth %s", cfg.AuthCode()))
 
 	byteArray, statusCode, err := issueRequest(req, cfg.IsDebug())
+	if statusCode == 401 {
+		return false, "", "", nil
+	}
 	if err != nil {
 		return false, "", "", err
 	}

@@ -73,14 +73,11 @@ func ConfirmAccessToken(cfg *Config) error {
 		logger.Error("ConfirmUserAccessToken", slog.Any("ERR", err.Error()))
 		return err
 	}
-	cfg.TargetUserId = id
-	cfg.TargetUser = name
-	if err != nil {
-		logger.Error("ConfirmUserAccessToken::ReferTargetUserId", slog.Any("ERR", err.Error()))
-		return err
-	}
 
 	if valid {
+		cfg.TargetUserId = id
+		cfg.TargetUser = name
+		logger.Info("ConfirmUserAccessToken", slog.Any("msg", "ok"))
 		return nil
 	}
 
@@ -91,6 +88,9 @@ func ConfirmAccessToken(cfg *Config) error {
 	}
 	cfg.UpdatAccessToken(AuthEntry{AuthCode: a, RefreshToken: r})
 	cfg.Save()
+	_, name, id, _ = confirmUserAccessToken(cfg)
+	cfg.TargetUserId = id
+	cfg.TargetUser = name
 	return nil
 }
 
