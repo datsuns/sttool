@@ -46,7 +46,7 @@ func issueEventSubRequest(cfg *Config, method, url string, body io.Reader) ([]by
 		return nil, 0, err
 	}
 	if cfg.IsDebug() {
-		logger.Info("rest auth", "Auth", cfg.AuthCode(), "ClientID", cfg.ClientId())
+		logger.Info("rest auth", slog.Any("Auth", cfg.AuthCode()), slog.Any("ClientID", cfg.ClientId()))
 	}
 	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", cfg.AuthCode()))
 	req.Header.Set("Content-Type", "application/json")
@@ -68,7 +68,12 @@ func StartAuthorizationCodeGrantFlow(cfg *Config, redirectUrl string, scope []st
 
 func createEventSubscription(cfg *Config, r *Responce, event string, e *EventTableEntry) error {
 	bin := e.Builder(cfg, r, event, e.Version)
-	logger.Info("create EventSub", "SessionID", r.Payload.Session.Id, "User", cfg.TargetUserId, "Type", event, "Raw", string(bin))
+	logger.Info("create EventSub",
+		slog.Any("SessionID", r.Payload.Session.Id),
+		slog.Any("User", cfg.TargetUserId),
+		slog.Any("Type", event),
+		slog.Any("Raw", string(bin)),
+	)
 	_, _, err := issueEventSubRequest(cfg, "POST", "https://api.twitch.tv/helix/eventsub/subscriptions", bytes.NewReader(bin))
 	return err
 }
@@ -86,7 +91,7 @@ func referTargetUserIdWith(cfg *Config, username string) (string, string, string
 		logger.Error("json.Unmarshal", slog.Any("ERR", err.Error()))
 		return "", "", "", status, err
 	}
-	logger.Info("referUserId", "id", r.Data[0].Id, "name", r.Data[0].DisplayName)
+	logger.Info("referUserId", slog.Any("id", r.Data[0].Id), slog.Any("name", r.Data[0].DisplayName))
 	return r.Data[0].Id, r.Data[0].Login, r.Data[0].DisplayName, status, nil
 }
 
@@ -114,7 +119,7 @@ func RequestUserAccessToken(cfg *Config, code, redirectUri string) (string, stri
 	r := &RequestTokenByCodeResponce{}
 	err = json.Unmarshal(byteArray, &r)
 	if err != nil {
-		logger.Error("json.Unmarshal", "ERR", err.Error())
+		logger.Error("json.Unmarshal", slog.Any("ERR", err.Error()))
 		return "", "", nil
 	}
 	return r.AccessToken, r.RefreshToken, nil
@@ -143,7 +148,7 @@ func RefreshAccessToken(cfg *Config, refreshToken string) (string, string, error
 	r := &RefreshTokenResponce{}
 	err = json.Unmarshal(byteArray, &r)
 	if err != nil {
-		logger.Error("json.Unmarshal", "ERR", err.Error())
+		logger.Error("json.Unmarshal", slog.Any("ERR", err.Error()))
 		return "", "", nil
 	}
 	return r.AccessToken, r.RefreshToken, nil
@@ -168,7 +173,7 @@ func ValidateAccessToken(cfg *Config) (bool, string, string, error) {
 	r := &ValidateTokenResponce{}
 	err = json.Unmarshal(byteArray, &r)
 	if err != nil {
-		logger.Error("json.Unmarshal", "ERR", err.Error())
+		logger.Error("json.Unmarshal", slog.Any("ERR", err.Error()))
 		return false, "", "", err
 	}
 	return statusCode == 200, r.Login, r.UserId, nil
@@ -193,14 +198,14 @@ func ReferUserClips(cfg *Config, userId string) (string, *GetClipsApiResponce) {
 func issueGetClipRequest(cfg *Config, url string) (string, *GetClipsApiResponce) {
 	raw, _, err := issueEventSubRequest(cfg, "GET", url, nil)
 	if err != nil {
-		logger.Error("Eventsub Request", "ERROR", err.Error())
+		logger.Error("Eventsub Request", slog.Any("ERR", err.Error()))
 		return "", nil
 	}
 
 	r := &GetClipsApiResponce{}
 	err = json.Unmarshal(raw, &r)
 	if err != nil {
-		logger.Error("json.Unmarshal", "ERR", err.Error())
+		logger.Error("json.Unmarshal", slog.Any("ERR", err.Error()))
 		return "", nil
 	}
 	ret := ""

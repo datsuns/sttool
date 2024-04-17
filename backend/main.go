@@ -57,11 +57,11 @@ func connect(localTest bool) (*websocket.Conn, error) {
 	} else {
 		u = url.URL{Scheme: GlobalScheme, Host: GlobalHost, Path: ConnectPath, RawQuery: buildQuery()}
 	}
-	logger.Info("connecting to " + u.String())
+	logger.Info("connect", slog.Any("to", u.String()))
 
 	c, _, err := websocket.DefaultDialer.Dial(u.String(), nil)
 	if err != nil {
-		logger.Error("dial error" + err.Error())
+		logger.Error("connect::Dial", slog.Any("ERR", err.Error()))
 		return nil, err
 	}
 	return c, nil
@@ -71,7 +71,7 @@ func receive(cfg *Config, conn *websocket.Conn) (*Responce, []byte, error) {
 	r := &Responce{}
 	_, message, err := conn.ReadMessage()
 	if err != nil {
-		logger.Error("ReadMessage " + err.Error())
+		logger.Error("receive::ReadMessage", slog.Any("ERR", err.Error()))
 		return nil, nil, err
 	}
 	if cfg.IsDebug() {
@@ -79,7 +79,7 @@ func receive(cfg *Config, conn *websocket.Conn) (*Responce, []byte, error) {
 	}
 	err = json.Unmarshal(message, &r)
 	if err != nil {
-		logger.Error("json.Unmarshal", "ERR", err.Error())
+		logger.Error("receive::json.Unmarshal", slog.Any("ERR", err.Error()))
 		return nil, nil, err
 	}
 	return r, message, nil
@@ -93,17 +93,17 @@ func handleSessionWelcome(cfg *Config, r *Responce, _ []byte, _ *TwitchStats) {
 	for k, v := range TwitchEventTable {
 		err := createEventSubscription(cfg, r, k, &v)
 		if err != nil {
-			logger.Error("Eventsub Request", "ERROR", err.Error())
+			logger.Error("Eventsub Request", slog.Any("ERR", err.Error()))
 		}
 	}
 }
 
 func handleNotification(ctx *BackendContext, cfg *Config, r *Responce, raw []byte, stats *TwitchStats) bool {
-	logger.Info("ReceiveNotification", "type", r.Payload.Subscription.Type)
+	logger.Info("ReceiveNotification", slog.Any("type", r.Payload.Subscription.Type))
 	if e, exists := TwitchEventTable[r.Payload.Subscription.Type]; exists {
 		e.Handler(ctx, cfg, r, raw, stats)
 	} else {
-		logger.Error("UNKNOWN notification", "Type", r.Payload.Subscription.Type)
+		logger.Error("UNKNOWN notification", slog.Any("Type", r.Payload.Subscription.Type))
 	}
 	if r.Payload.Subscription.Type == "stream.offline" {
 		return false
@@ -117,25 +117,25 @@ func progress(ctx *BackendContext, _ *chan struct{}, cfg *Config, conn *websocke
 		if err != nil {
 			break
 		}
-		logger.Info("recv", "Type", r.Metadata.MessageType)
+		logger.Info("recv", slog.Any("Type", r.Metadata.MessageType))
 		switch r.Metadata.MessageType {
 		case "session_welcome":
-			logger.Info("event: connected")
+			logger.Info("progress", slog.Any("event", "connected"))
 			handleSessionWelcome(cfg, r, raw, stats)
 		case "session_keepalive":
-			//logger.Info("event: keepalive")
+			//logger.Info("progress", slog.Any("event", "keepalive"))
 			ctx.CallBack.KeepAlive()
 		case "session_reconnect":
-			logger.Info("event: reconnect")
+			logger.Info("progress", slog.Any("event", "reconnect"))
 		case "notification":
 			logger.Info("event: notification")
 			if !handleNotification(ctx, cfg, r, raw, stats) {
 				return
 			}
 		case "revocation":
-			logger.Info("event: revocation")
+			logger.Info("progress", slog.Any("event", "revocation"))
 		default:
-			logger.Error("UNKNOWN Event", "Type", r.Metadata.MessageType)
+			logger.Error("progress::UNKNOWN", slog.Any("Type", r.Metadata.MessageType))
 		}
 	}
 }
@@ -241,7 +241,7 @@ func (c *BackendContext) Serve() {
 			// waiting (with timeout) for the server to close the connection.
 			err := conn.WriteMessage(websocket.CloseMessage, websocket.FormatCloseMessage(websocket.CloseNormalClosure, ""))
 			if err != nil {
-				logger.Error("write close " + err.Error())
+				logger.Error("write close", slog.Any("ERR", err.Error()))
 				return
 			}
 			select {

@@ -127,7 +127,7 @@ func handleNotificationChannelSubscribe(_ *BackendContext, _ *Config, r *Responc
 	v := &ResponceChannelSubscribe{}
 	err := json.Unmarshal(raw, &v)
 	if err != nil {
-		logger.Error("Unmarshal", "error", err, "raw", string(raw))
+		logger.Error("handleNotificationChannelSubscribe::Unmarshal", slog.Any("ERR", err.Error()), slog.Any("raw", string(raw)))
 	}
 	e := &v.Payload.Event
 	if v.Payload.Event.IsGift {
@@ -153,7 +153,7 @@ func handleNotificationChannelCheer(_ *BackendContext, _ *Config, r *Responce, r
 	v := &ResponceChannelCheer{}
 	err := json.Unmarshal(raw, &v)
 	if err != nil {
-		logger.Error("Unmarshal", "error", err, "raw", string(raw))
+		logger.Error("handleNotificationChannelCheer::Unmarshal", slog.Any("ERR", err.Error()), slog.Any("raw", string(raw)))
 	}
 	e := &v.Payload.Event
 	statsLogger.Info("event(Cheer)",
@@ -173,7 +173,7 @@ func handleNotificationStreamOnline(_ *BackendContext, cfg *Config, r *Responce,
 	v := &ResponceStreamOnline{}
 	err := json.Unmarshal(raw, &v)
 	if err != nil {
-		logger.Error("Unmarshal", "error", err, "raw", string(raw))
+		logger.Error("handleNotificationStreamOnline::Unmarshal", slog.Any("ERR", err.Error()), slog.Any("raw", string(raw)))
 	}
 	s.StreamStarted()
 	e := &v.Payload.Event
@@ -189,7 +189,7 @@ func handleNotificationStreamOffline(_ *BackendContext, cfg *Config, r *Responce
 	v := &ResponceStreamOffline{}
 	err := json.Unmarshal(raw, &v)
 	if err != nil {
-		logger.Error("Unmarshal", "error", err, "raw", string(raw))
+		logger.Error("handleNotificationStreamOffline::Unmarshal", slog.Any("ERR", err.Error()), slog.Any("raw", string(raw)))
 	}
 	e := &v.Payload.Event
 	statsLogger.Info("event(Offline)",
@@ -207,7 +207,7 @@ func handleNotificationChannelSubscriptionGift(_ *BackendContext, _ *Config, r *
 	v := &ResponceChannelSubscriptionGift{}
 	err := json.Unmarshal(raw, &v)
 	if err != nil {
-		logger.Error("Unmarshal", "error", err, "raw", string(raw))
+		logger.Error("handleNotificationChannelSubscriptionGift::Unmarshal", slog.Any("ERR", err.Error()), slog.Any("raw", string(raw)))
 	}
 	e := &v.Payload.Event
 	statsLogger.Info("event(Gift)",
@@ -227,7 +227,7 @@ func handleNotificationChannelSubscriptionMessage(_ *BackendContext, _ *Config, 
 	v := &ResponceChannelSubscriptionMessage{}
 	err := json.Unmarshal(raw, &v)
 	if err != nil {
-		logger.Error("Unmarshal", "error", err, "raw", string(raw))
+		logger.Error("handleNotificationChannelSubscriptionMessage::Unmarshal", slog.Any("ERR", err.Error()), slog.Any("raw", string(raw)))
 	}
 	e := &v.Payload.Event
 	statsLogger.Info("event(ReSubscribed)",
@@ -245,7 +245,7 @@ func handleNotificationChannelPointsCustomRewardRedemptionAdd(_ *BackendContext,
 	v := &ResponceChannelPointsCustomRewardRedemptionAdd{}
 	err := json.Unmarshal(raw, &v)
 	if err != nil {
-		logger.Error("Unmarshal", "error", err, "raw", string(raw))
+		logger.Error("handleNotificationChannelPointsCustomRewardRedemptionAdd::Unmarshal", slog.Any("ERR", err.Error()), slog.Any("raw", string(raw)))
 	}
 	e := &v.Payload.Event
 	statsLogger.Info("event(Channel Points)",
@@ -299,7 +299,7 @@ func handleNotificationChannelChatNotification(ctx *BackendContext, cfg *Config,
 	v := &ResponceChannelChatNotification{}
 	err := json.Unmarshal(raw, &v)
 	if err != nil {
-		logger.Error("Unmarshal", "error", err, "raw", string(raw))
+		logger.Error("handleNotificationChannelChatNotification::Unmarshal", slog.Any("ERR", err.Error()), slog.Any("raw", string(raw)))
 	}
 	e := &v.Payload.Event
 	switch e.NoticeType {
@@ -320,7 +320,7 @@ func handleNotificationChannelChatNotification(ctx *BackendContext, cfg *Config,
 	case "bits_badge_tier":
 	case "charity_donation":
 	default:
-		logger.Error("event(NotParsed)", "raw", string(raw))
+		logger.Error("event(NotParsed)", slog.Any("raw", string(raw)))
 	}
 }
 
@@ -328,7 +328,7 @@ func handleNotificationChannelChatMessage(_ *BackendContext, _ *Config, r *Respo
 	v := &ResponceChatMessage{}
 	err := json.Unmarshal(raw, &v)
 	if err != nil {
-		logger.Error("Unmarshal", "error", err, "raw", string(raw))
+		logger.Error("handleNotificationChannelChatMessage::Unmarshal", slog.Any("ERR", err.Error()), slog.Any("raw", string(raw)))
 	}
 	e := &v.Payload.Event
 	statsLogger.Info("event(ChatMsg)",
@@ -343,7 +343,7 @@ func handleNotificationChannelFollow(_ *BackendContext, _ *Config, r *Responce, 
 	v := &ResponceChannelFollow{}
 	err := json.Unmarshal(raw, &v)
 	if err != nil {
-		logger.Error("Unmarshal", "error", err, "raw", string(raw))
+		logger.Error("handleNotificationChannelFollow::Unmarshal", slog.Any("ERR", err.Error()), slog.Any("raw", string(raw)))
 	}
 	e := &v.Payload.Event
 	statsLogger.Info("event(Channel Follow)",
