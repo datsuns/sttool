@@ -1,7 +1,7 @@
 package backend
 
 const (
-	ToolVersion = "1.3.0"
+	ToolVersion = "1.4.0"
 
 	KeepAliveSecond        = "30"
 	GlobalScheme           = "wss"
