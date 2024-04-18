@@ -17,11 +17,11 @@ import (
 type UserClip struct {
 	Id        string
 	Url       string
-	Mp4       string
 	Title     string
 	Thumbnail string
 	ViewCount int
 	Duration  float32
+	Mp4       string
 }
 
 type RaidCallbackParam struct {
