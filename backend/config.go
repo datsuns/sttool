@@ -51,7 +51,7 @@ var (
 		DelayMinutesFromRaidToStop: 3,
 		NewClipWatchIntervalSecond: 128,
 		LocalServerPortNumber:      8930,
-		OverlayEnabled:             false,
+		OverlayEnabled:             true,
 		ClipPlayerWidth:            640,
 		ClipPlayerHeight:           480,
 	}
