@@ -14,6 +14,10 @@ export function GetServerPort() {
   return window['go']['main']['App']['GetServerPort']();
 }
 
+export function LoadConfig() {
+  return window['go']['main']['App']['LoadConfig']();
+}
+
 export function OnConnectedCallback() {
   return window['go']['main']['App']['OnConnectedCallback']();
 }
@@ -28,6 +32,10 @@ export function OnRaidCallback(arg1) {
 
 export function OpenURL(arg1) {
   return window['go']['main']['App']['OpenURL'](arg1);
+}
+
+export function SaveConfig(arg1) {
+  return window['go']['main']['App']['SaveConfig'](arg1);
 }
 
 export function StartClip(arg1, arg2) {
