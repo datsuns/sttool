@@ -1,6 +1,9 @@
 package backend
 
-import "testing"
+import (
+	"os"
+	"testing"
+)
 
 func TestConfig_Load(t *testing.T) {
 	raw := []byte(`SUBSCRIBE_USER: user1
@@ -20,6 +23,7 @@ CLIENT_ID: client
 }
 
 func TestConfig_Save(t *testing.T) {
+	dest := "test.yaml"
 	raw := []byte(`SERVER_PORT: 1234
 `)
 	c, e := loadConfigFrom(raw)
@@ -29,4 +33,23 @@ func TestConfig_Save(t *testing.T) {
 	if c.LocalPortNum() != 1234 {
 		t.Errorf("invalid overlay port 1234 != %v", c.LocalPortNum())
 	}
+	if e := c.SaveTo(dest); e != nil {
+		t.Errorf("save error [%v]", e.Error())
+	}
+	if _, e := os.Stat(dest); e != nil {
+		t.Errorf("file cant write [%v]", e.Error())
+	}
+	b, err := os.ReadFile(dest)
+	if err != nil {
+		t.Errorf("file load error [%v]", e.Error())
+	}
+
+	c2, err := loadConfigFrom(b)
+	if e != nil {
+		t.Errorf("load2 error [%v]", e.Error())
+	}
+	if c2.LocalPortNum() != 1234 {
+		t.Errorf("invalid overlay port(2) 1234 != %v", c.LocalPortNum())
+	}
+	os.Remove(dest)
 }

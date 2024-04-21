@@ -106,14 +106,26 @@ func (c *Config) Init() {
 	c.RaidLogPath = RaidLogPath
 }
 
-func (c *Config) SaveAll() error {
+func (c *Config) SaveTo(dest string) error {
 	var err error
 	body, err := yaml.Marshal(c.Body)
 	if err != nil {
 		return err
 	}
-	err = os.WriteFile(ConfigFilePath, body, 0644)
+	err = os.WriteFile(dest, body, 0644)
 	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (c *Config) Save() error {
+	return c.SaveTo(ConfigFilePath)
+}
+
+func (c *Config) SaveAll() error {
+	var err error
+	if err = c.Save(); err != nil {
 		return err
 	}
 	auth, err := yaml.Marshal(c.Auth)
