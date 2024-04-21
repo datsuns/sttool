@@ -1,8 +1,22 @@
 <script>
   import { onMount } from "svelte";
+  import { writable } from "svelte/store";
+  import Drawer from "@smui/drawer";
+  import TopAppBar, {
+    Row,
+    Section,
+    Title,
+    AutoAdjust,
+  } from "@smui/top-app-bar";
+  import IconButton, { Icon } from "@smui/icon-button";
+  import List, { Item } from "@smui/list";
   import { GetServerPort } from "../wailsjs/go/main/App.js";
   import { LogPrint, EventsOn } from "../wailsjs/runtime/runtime";
   import MainScreen from "./MainScreen.svelte";
+  import ConfigScreen from "./ConfigScreen.svelte";
+
+  let drawerOpened = false;
+  let currentScreen = writable("main");
 
   let mainScreenRef;
 
@@ -13,6 +27,15 @@
     GetServerPort().then((result) => (ServerPort = result));
   });
 
+  function toggleDrawer() {
+    drawerOpened = !drawerOpened;
+  }
+
+  function switchScreen(screen) {
+    currentScreen.set(screen);
+    toggleDrawer();
+  }
+
   EventsOn("OnConnected", (msg) => {
     LogPrint(`App:OnConnected ${msg}`);
     mainScreenRef.handleOnConnected(msg);
@@ -20,7 +43,12 @@
 
   EventsOn("OnRaid", (msg, username, items) => {
     LogPrint(`App:OnRaid ${msg}`);
-    mainScreenRef.handleOnCRaid(msg, username, items);
+    let entry = { name: username, body: items };
+    LogPrint(`raid from ${username}`);
+    items.forEach((c) => {
+      LogPrint(`user clip [${c.Title}], url [${c.Thumbnail}], mp4 [${c.Mp4}]`);
+    });
+    Clips = [...Clips, entry];
   });
 </script>
 
@@ -31,11 +59,39 @@
     href="/src/smui.css"
     media="(prefers-color-scheme: light)"
   />
-  <MainScreen
-    bind:this={mainScreenRef}
-    overlayServerPort={ServerPort}
-    raidUserClips={Clips}
+  <link
+    href="https://fonts.googleapis.com/css2?family=Material+Icons&display=swap"
+    rel="stylesheet"
   />
+
+  <TopAppBar variant="fixed" collapsed>
+    <IconButton on:click={toggleDrawer} class="material-icons">
+      <Icon class="material-icons">menu</Icon>
+    </IconButton>
+  </TopAppBar>
+
+  <Drawer class="app-drawer" variant="dismissible" bind:open={drawerOpened}>
+    <List>
+      <Item on:click={() => switchScreen("main")}>
+        <span class="smui-list-item__text">メイン</span>
+      </Item>
+      <Item on:click={() => switchScreen("settings")}>
+        <span class="smui-list-item__text">設定</span>
+      </Item>
+    </List>
+  </Drawer>
+
+  <div class="content">
+    {#if $currentScreen === "main"}
+      <MainScreen
+        bind:this={mainScreenRef}
+        overlayServerPort={ServerPort}
+        raidUserClips={Clips}
+      />
+    {:else if $currentScreen === "settings"}
+      <ConfigScreen />
+    {/if}
+  </div>
 </main>
 
 <style>

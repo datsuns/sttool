@@ -1,13 +1,14 @@
 <script>
     import LayoutGrid, { Cell } from "@smui/layout-grid";
-
     import {
         OpenURL,
         StartClip,
         StopClip,
         DebugRaidTest,
     } from "../wailsjs/go/main/App.js";
+
     import { LogPrint, EventsOn } from "../wailsjs/runtime/runtime";
+
     import Clip from "./Clip.svelte";
 
     export let overlayServerPort;
@@ -35,18 +36,6 @@
     export function handleOnConnected(msg) {
         LogPrint(`MainScreen:handleOnConnected ${msg}`);
         DebugRaidTest("datsuns7");
-    }
-
-    export function handleOnCRaid(msg, username, items) {
-        LogPrint(`MainScreen:handleOnCRaid`);
-        let entry = { name: username, body: items };
-        LogPrint(`raid from ${username}`);
-        items.forEach((c) => {
-            LogPrint(
-                `user clip [${c.Title}], url [${c.Thumbnail}], mp4 [${c.Mp4}]`,
-            );
-        });
-        raidUserClips = [...raidUserClips, entry];
     }
 </script>
 
