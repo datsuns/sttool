@@ -14,6 +14,10 @@ export function GetServerPort() {
   return window['go']['main']['App']['GetServerPort']();
 }
 
+export function OnConnectedCallback() {
+  return window['go']['main']['App']['OnConnectedCallback']();
+}
+
 export function OnKeepAliveCallback() {
   return window['go']['main']['App']['OnKeepAliveCallback']();
 }

@@ -29,10 +29,12 @@ type RaidCallbackParam struct {
 	Clips []UserClip
 }
 type KeepAliveCallback func()
+type ConnectedCallback func()
 type RaidCallback func(*RaidCallbackParam)
 type CallBack struct {
-	KeepAlive KeepAliveCallback
-	OnRaid    RaidCallback
+	KeepAlive   KeepAliveCallback
+	OnRaid      RaidCallback
+	OnConnected ConnectedCallback
 }
 type BackendContext struct {
 	CallBack *CallBack
@@ -122,6 +124,7 @@ func progress(ctx *BackendContext, _ *chan struct{}, cfg *Config, conn *websocke
 		case "session_welcome":
 			logger.Info("progress", slog.Any("event", "connected"))
 			handleSessionWelcome(cfg, r, raw, stats)
+			ctx.CallBack.OnConnected()
 		case "session_keepalive":
 			//logger.Info("progress", slog.Any("event", "keepalive"))
 			ctx.CallBack.KeepAlive()

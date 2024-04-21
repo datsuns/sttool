@@ -23,8 +23,9 @@ func (a *App) startup(ctx context.Context) {
 	a.ctx = ctx
 	a.Items = []backend.UserClip{}
 	callback := &backend.CallBack{
-		KeepAlive: a.OnKeepAliveCallback,
-		OnRaid:    a.OnRaidCallback,
+		KeepAlive:   a.OnKeepAliveCallback,
+		OnRaid:      a.OnRaidCallback,
+		OnConnected: a.OnConnectedCallback,
 	}
 	a.Backend = backend.NewBackend(callback)
 	go a.Backend.Serve()
@@ -59,6 +60,11 @@ func (a *App) OnRaidCallback(param *backend.RaidCallbackParam) {
 	)
 	runtime.EventsEmit(a.ctx, "OnRaid", "raided users clip", param.From, param.Clips)
 	//runtime.EventsEmit(a.ctx, "OnRaid", "raided users clip", param.From, param.Clips)
+}
+
+func (a *App) OnConnectedCallback() {
+	runtime.LogDebug(a.ctx, "Connected")
+	runtime.EventsEmit(a.ctx, "OnConnected", "connected")
 }
 
 func (a *App) DebugAppendEntry() {

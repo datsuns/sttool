@@ -8,6 +8,8 @@ export function DebugRaidTest(arg1:string):Promise<void>;
 
 export function GetServerPort():Promise<number>;
 
+export function OnConnectedCallback():Promise<void>;
+
 export function OnKeepAliveCallback():Promise<void>;
 
 export function OnRaidCallback(arg1:backend.RaidCallbackParam):Promise<void>;

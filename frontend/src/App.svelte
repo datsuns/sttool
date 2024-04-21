@@ -42,6 +42,11 @@
     LogPrint("stop Clip");
   };
 
+  EventsOn("OnConnected", (msg) => {
+    LogPrint(`OnConnected ${msg}`);
+    DebugRaidTest("datsuns7");
+  });
+
   EventsOn("OnRaid", (msg, username, items) => {
     let entry = { name: username, body: items };
     LogPrint(`raid from ${username}`);
