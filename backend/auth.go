@@ -52,7 +52,7 @@ func Issue1stTimeAuthentication(cfg *Config) error {
 
 	a, r, _ := RequestUserAccessToken(cfg, code, AuthRedirectUri)
 	cfg.UpdatAccessToken(AuthEntry{AuthCode: a, RefreshToken: r})
-	cfg.Save()
+	cfg.SaveAll()
 	logger.Info("Issue1stTimeAuthentication", slog.Any("code", code), slog.Any("access", a), slog.Any("refresh", r))
 	statsLogger.Info("Issue1stTimeAuthentication",
 		slog.Any(LogFieldName_Type, "ResetToken"),
@@ -87,7 +87,7 @@ func ConfirmAccessToken(cfg *Config) error {
 		return err
 	}
 	cfg.UpdatAccessToken(AuthEntry{AuthCode: a, RefreshToken: r})
-	cfg.Save()
+	cfg.SaveAll()
 	_, name, id, _ = confirmUserAccessToken(cfg)
 	cfg.TargetUserId = id
 	cfg.TargetUser = name

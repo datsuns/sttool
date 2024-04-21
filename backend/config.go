@@ -106,7 +106,7 @@ func (c *Config) Init() {
 	c.RaidLogPath = RaidLogPath
 }
 
-func (c *Config) Save() error {
+func (c *Config) SaveAll() error {
 	var err error
 	body, err := yaml.Marshal(c.Body)
 	if err != nil {
