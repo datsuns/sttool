@@ -6,6 +6,7 @@
         Media,
         MediaContent,
     } from "@smui/card";
+    import Clip from "./Clip.svelte";
 
     export let startClipCallback;
     export let Title;
