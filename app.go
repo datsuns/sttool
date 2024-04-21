@@ -39,6 +39,14 @@ func (a *App) StopClip() {
 	a.Backend.Overlay.StopClip()
 }
 
+func (a *App) LoadConfig() *backend.Config {
+	return a.Backend.LoadConfig()
+}
+
+func (a *App) SaveConfig(cfg *backend.Config) {
+	a.Backend.SaveConfig(cfg)
+}
+
 func (a *App) GetServerPort() int {
 	return a.Backend.GetOverlayPortNumber()
 }

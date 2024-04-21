@@ -255,3 +255,14 @@ func (c *BackendContext) Serve() {
 		}
 	}
 }
+
+func (c *BackendContext) LoadConfig() *Config {
+	return c.Config
+}
+
+func (c *BackendContext) SaveConfig(cfg *Config) {
+	c.Config = cfg
+	if e := c.Config.Save(); e != nil {
+		logger.Error("SaveConfig", slog.Any("ERR", e.Error()))
+	}
+}
