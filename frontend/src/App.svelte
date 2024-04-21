@@ -15,13 +15,13 @@
   } from "../wailsjs/go/main/App.js";
   import { DebugRaidTest } from "../wailsjs/go/main/App.js";
   import { LogPrint, EventsOn } from "../wailsjs/runtime/runtime";
+  import Clip from "./Clip.svelte";
 
   let dbg_RaidUser = "";
   let Clips = [];
   let ServerPort = 0;
 
   onMount(() => {
-    //DebugRaidTest("twitch-id");
     GetServerPort().then((result) => (ServerPort = result));
   });
 
@@ -79,26 +79,16 @@
     <LayoutGrid>
       {#each clip.body as c}
         <Cell span={4}>
-          <Card style="height: 100%;">
-            <PrimaryAction
-              style="height: 100%;"
-              on:click={() => startClipTest(c.Mp4, c.Duration)}
-            >
-              <Media class="card-media-16x9" aspectRatio="16x9">
-                <MediaContent>
-                  <img class="my-thumbnail" src={c.Thumbnail} alt={c.Title} />
-                </MediaContent>
-              </Media>
-              <Content>
-                <div class="my-clip-title">{c.Title}</div>
-              </Content>
-              <Content>
-                <div class="my-viewcount">
-                  再生数:{c.ViewCount} / 時間:{c.Duration}
-                </div>
-              </Content>
-            </PrimaryAction>
-          </Card>
+          <div style="height: 100%;">
+            <Clip
+              startClipCallback={startClipTest}
+              Url={c.Mp4}
+              Title={c.Title}
+              Thumnail={c.Thumbnail}
+              Duration={c.Duration}
+              ViewCount={c.ViewCount}
+            />
+          </div>
         </Cell>
       {/each}
     </LayoutGrid>
@@ -110,25 +100,7 @@
     background-color: rgba(18, 29, 45, 1);
   }
 
-  .my-thumbnail {
-    width: 100%;
-    height: 100%;
-  }
-
   .my-overlay-url {
     color: lightblue;
-  }
-
-  .my-clip-title {
-    color: whitesmoke;
-  }
-
-  .my-viewcount {
-    position: absolute;
-    color: darkgray;
-    bottom: 8px;
-    left: 0px;
-    right: 0px;
-    font-size: 70%;
   }
 </style>
