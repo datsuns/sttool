@@ -124,10 +124,14 @@ func progress(ctx *BackendContext, _ *chan struct{}, cfg *Config, conn *websocke
 		case "session_welcome":
 			logger.Info("progress", slog.Any("event", "connected"))
 			handleSessionWelcome(cfg, r, raw, stats)
-			ctx.CallBack.OnConnected()
+			if ctx.CallBack.OnConnected != nil {
+				ctx.CallBack.OnConnected()
+			}
 		case "session_keepalive":
 			//logger.Info("progress", slog.Any("event", "keepalive"))
-			ctx.CallBack.KeepAlive()
+			if ctx.CallBack.KeepAlive != nil {
+				ctx.CallBack.KeepAlive()
+			}
 		case "session_reconnect":
 			logger.Info("progress", slog.Any("event", "reconnect"))
 		case "notification":

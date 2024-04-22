@@ -292,7 +292,9 @@ func handleNotificationChannelChatNotificationRaid(ctx *BackendContext, cfg *Con
 			Mp4:       ConvertThumbnailToMp4Url(c.ThumbnailUrl),
 		})
 	}
-	ctx.CallBack.OnRaid(p)
+	if ctx.CallBack.OnRaid != nil {
+		ctx.CallBack.OnRaid(p)
+	}
 }
 
 func handleNotificationChannelChatNotification(ctx *BackendContext, cfg *Config, r *Responce, raw []byte, s *TwitchStats) {
