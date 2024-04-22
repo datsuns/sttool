@@ -10,7 +10,7 @@
   } from "@smui/top-app-bar";
   import IconButton, { Icon } from "@smui/icon-button";
   import List, { Item } from "@smui/list";
-  import { GetServerPort } from "../wailsjs/go/main/App.js";
+  import { GetServerPort, LoadConfig } from "../wailsjs/go/main/App.js";
   import { LogPrint, EventsOn } from "../wailsjs/runtime/runtime";
   import MainScreen from "./MainScreen.svelte";
   import ConfigScreen from "./ConfigScreen.svelte";
@@ -22,9 +22,11 @@
 
   let Clips = [];
   let ServerPort = 0;
+  let Config;
 
   onMount(() => {
     GetServerPort().then((result) => (ServerPort = result));
+    LoadConfig().then((result) => (Config = result));
   });
 
   function toggleDrawer() {
@@ -32,8 +34,10 @@
   }
 
   function switchScreen(screen) {
+    LogPrint(`App:switchScreen >> ${screen}`);
     currentScreen.set(screen);
     toggleDrawer();
+    LogPrint(`App:switchScreen << ${screen}`);
   }
 
   EventsOn("OnConnected", (msg) => {
@@ -89,7 +93,7 @@
         raidUserClips={Clips}
       />
     {:else if $currentScreen === "settings"}
-      <ConfigScreen />
+      <ConfigScreen {Config} />
     {/if}
   </div>
 </main>

@@ -260,12 +260,12 @@ func (c *BackendContext) Serve() {
 	}
 }
 
-func (c *BackendContext) LoadConfig() *Config {
-	return c.Config
+func (c *BackendContext) LoadConfig() *ConfigBody {
+	return c.Config.LoadRaw()
 }
 
-func (c *BackendContext) SaveConfig(cfg *Config) {
-	c.Config = cfg
+func (c *BackendContext) SaveConfig(cfg *ConfigBody) {
+	c.Config.UpdateRaw(cfg)
 	if e := c.Config.SaveAll(); e != nil {
 		logger.Error("SaveConfig", slog.Any("ERR", e.Error()))
 	}

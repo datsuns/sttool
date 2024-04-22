@@ -15,6 +15,10 @@ type App struct {
 	Backend *backend.BackendContext
 }
 
+type AppConfig struct {
+	backend.ConfigBody
+}
+
 func NewApp() *App {
 	return &App{}
 }
@@ -39,12 +43,13 @@ func (a *App) StopClip() {
 	a.Backend.Overlay.StopClip()
 }
 
-func (a *App) LoadConfig() *backend.Config {
-	return a.Backend.LoadConfig()
+func (a *App) LoadConfig() *AppConfig {
+	ret := &AppConfig{ConfigBody: *a.Backend.LoadConfig()}
+	return ret
 }
 
-func (a *App) SaveConfig(cfg *backend.Config) {
-	a.Backend.SaveConfig(cfg)
+func (a *App) SaveConfig(appCfg *AppConfig) {
+	a.Backend.SaveConfig(&appCfg.ConfigBody)
 }
 
 func (a *App) GetServerPort() int {

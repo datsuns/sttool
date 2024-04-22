@@ -155,6 +155,14 @@ func (c *Config) LoadAuthConfig() error {
 	return nil
 }
 
+func (c *Config) UpdateRaw(b *ConfigBody) {
+	c.Body = *b
+}
+
+func (c *Config) LoadRaw() *ConfigBody {
+	return &c.Body
+}
+
 func (c *Config) UpdatAccessToken(auth AuthEntry) {
 	c.Auth = auth
 }
