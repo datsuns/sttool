@@ -5,13 +5,17 @@ import "sttool/backend"
 func OnKeepAliveCallback() {
 }
 
-func OnRaidCallback(param *backend.RaidCallbackParam) {
+func OnRaidCallback(_ *backend.RaidCallbackParam) {
+}
+
+func OnConnectedCallback() {
 }
 
 func main() {
 	callback := &backend.CallBack{
-		KeepAlive: OnKeepAliveCallback,
-		OnRaid:    OnRaidCallback,
+		KeepAlive:   OnKeepAliveCallback,
+		OnRaid:      OnRaidCallback,
+		OnConnected: OnConnectedCallback,
 	}
 	b := backend.NewBackend(callback)
 	b.Serve()
