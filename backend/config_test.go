@@ -53,3 +53,41 @@ func TestConfig_Save(t *testing.T) {
 	}
 	os.Remove(dest)
 }
+
+func TestConfig_DontUpdateSavedData(t *testing.T) {
+	dest := "test.yaml"
+	dest2 := "test2.yaml"
+	raw := []byte(`
+  DEBUG: true
+  CLIP_PLAYER_WIDTH: 300
+`)
+	os.WriteFile(dest, raw, 0666)
+	cfg, err := LoadConfigFromFile(dest)
+	if err != nil {
+		t.Errorf("file load error %v", err.Error())
+	}
+
+	if !cfg.IsDebug() {
+		t.Errorf("invalid debug mode flag true != %v", cfg.IsDebug())
+	}
+	if cfg.CipWidth() != 300 {
+		t.Errorf("invalid clip window width 300 != %v", cfg.CipWidth())
+	}
+	if cfg.CipHeight() != 480 {
+		t.Errorf("invalid clip window height 480 != %v", cfg.CipHeight())
+	}
+
+	if err := cfg.SaveTo(dest2); err != nil {
+		t.Errorf("save error %v", err)
+	}
+
+	cfg, err = LoadConfigFromFile(dest2)
+	if err != nil {
+		t.Errorf("file load error %v", err.Error())
+	}
+	if cfg.CipHeight() != 480 {
+		t.Errorf("invalid clip window height 480 != %v", cfg.CipHeight())
+	}
+	os.Remove(dest)
+	os.Remove(dest2)
+}

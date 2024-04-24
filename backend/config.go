@@ -88,6 +88,7 @@ func LoadConfig() (*Config, error) {
 func LoadConfigFromFile(path string) (*Config, error) {
 	var e error
 	f, e := os.Open(path)
+	defer f.Close()
 	if e != nil {
 		return setDefaultConfig(path)
 	}
@@ -146,6 +147,7 @@ func (c *Config) SaveAll() error {
 func (c *Config) LoadAuthConfig() error {
 	var e error
 	f, e := os.Open(AuthInfoFile)
+	defer f.Close()
 	if e != nil {
 		return e
 	}

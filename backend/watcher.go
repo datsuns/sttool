@@ -18,6 +18,7 @@ import (
 
 func playSound(path string) {
 	f, err := os.Open(path)
+	defer f.Close()
 	if err != nil {
 		logger.Error("PlaySound(open)", slog.Any("error", err.Error()))
 		return
