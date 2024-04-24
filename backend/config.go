@@ -82,10 +82,14 @@ func setDefaultConfig(path string) (*Config, error) {
 }
 
 func LoadConfig() (*Config, error) {
+	return LoadConfigFromFile(ConfigFilePath)
+}
+
+func LoadConfigFromFile(path string) (*Config, error) {
 	var e error
-	f, e := os.Open(ConfigFilePath)
+	f, e := os.Open(path)
 	if e != nil {
-		return setDefaultConfig(ConfigFilePath)
+		return setDefaultConfig(path)
 	}
 	b, e := io.ReadAll(f)
 	if e != nil {
