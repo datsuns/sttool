@@ -1,5 +1,6 @@
 <script>
     import LayoutGrid, { Cell } from "@smui/layout-grid";
+    import Paper, { Title } from "@smui/paper";
     import {
         OpenURL,
         StartClip,
@@ -52,22 +53,28 @@
 <button on:click={stopClipTest}>stop clip</button>
 {#each raidUserClips.slice().reverse() as clip}
     <h1>{clip.name} さんのクリップ</h1>
-    <LayoutGrid>
-        {#each clip.body as c}
-            <Cell span={4}>
-                <div style="height: 100%;">
-                    <Clip
-                        startClipCallback={startClipTest}
-                        Url={c.Mp4}
-                        Title={c.Title}
-                        Thumnail={c.Thumbnail}
-                        Duration={c.Duration}
-                        ViewCount={c.ViewCount}
-                    />
-                </div>
-            </Cell>
-        {/each}
-    </LayoutGrid>
+    {#if clip.body.length == 0}
+        <Paper>
+            <Title>クリップがありません</Title>
+        </Paper>
+    {:else}
+        <LayoutGrid>
+            {#each clip.body as c}
+                <Cell span={4}>
+                    <div style="height: 100%;">
+                        <Clip
+                            startClipCallback={startClipTest}
+                            Url={c.Mp4}
+                            Title={c.Title}
+                            Thumnail={c.Thumbnail}
+                            Duration={c.Duration}
+                            ViewCount={c.ViewCount}
+                        />
+                    </div>
+                </Cell>
+            {/each}
+        </LayoutGrid>
+    {/if}
 {/each}
 
 <style>
