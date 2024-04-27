@@ -95,7 +95,7 @@ func handleSessionWelcome(cfg *Config, r *Responce, _ []byte, _ *TwitchStats) {
 	for k, v := range TwitchEventTable {
 		err := createEventSubscription(cfg, r, k, &v)
 		if err != nil {
-			logger.Error("Eventsub Request", slog.Any("ERR", err.Error()))
+			logger.Error("handleSessionWelcome::createEventSubscription", slog.Any("ERR", err.Error()))
 		}
 	}
 }
@@ -158,38 +158,28 @@ func buildLogPath(cfg *Config) string {
 	return filepath.Join(cfg.LogPath(), fmt.Sprintf("%v.txt", n.Format("20060102")))
 }
 
-func buildLogger(c *Config, logPath string, debug bool) (*slog.Logger, *slog.Logger) {
+func buildLogger(c *Config, logPath string) (*slog.Logger, *slog.Logger) {
 	log, _ := os.OpenFile(logPath, os.O_APPEND|os.O_RDWR|os.O_CREATE, 0666)
 	runlog, _ := os.OpenFile(
 		filepath.Join(c.LogPath(), "debug.txt"),
-		os.O_APPEND|os.O_RDWR|os.O_CREATE, 0666)
-	if debug {
-		return slog.New(
-				slogmulti.Fanout(
-					slog.NewTextHandler(os.Stdout, nil),
-					slog.NewTextHandler(runlog, nil),
-					NewTwitchInfoLogger(c, os.Stdout),
-				),
+		os.O_APPEND|os.O_RDWR|os.O_CREATE, 0666,
+	)
+	mainLogger := slog.NewTextHandler(runlog, nil)
+	// should not pass handler instance after instance of os.Stdout
+	// that may depend on spec of slogmulti.Fanout() or slog.NewTextHandler()
+	// if pass a handler after os.Stdout, the handler passed after stdout cant write any log
+	return slog.New(
+			slogmulti.Fanout(
+				mainLogger,
+				slog.NewTextHandler(os.Stdout, nil),
 			),
-			slog.New(
-				slogmulti.Fanout(
-					slog.NewTextHandler(runlog, nil),
-					NewTwitchInfoLogger(c, log),
-				),
-			)
-	} else {
-		return slog.New(
-				slogmulti.Fanout(
-					slog.NewTextHandler(runlog, nil),
-				),
+		),
+		slog.New(
+			slogmulti.Fanout(
+				mainLogger,
+				NewTwitchInfoLogger(c, log),
 			),
-			slog.New(
-				slogmulti.Fanout(
-					slog.NewTextHandler(runlog, nil),
-					NewTwitchInfoLogger(c, log),
-				),
-			)
-	}
+		)
 }
 
 func NewBackend(callback *CallBack) *BackendContext {
@@ -202,7 +192,7 @@ func NewBackend(callback *CallBack) *BackendContext {
 	}
 	ctx.Config = cfg
 	path := buildLogPath(cfg)
-	logger, statsLogger = buildLogger(cfg, path, cfg.IsDebug())
+	logger, statsLogger = buildLogger(cfg, path)
 	ctx.Stats = NewTwitchStats()
 	ctx.Overlay = NewOverlay(cfg)
 	return ctx

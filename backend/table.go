@@ -168,7 +168,7 @@ func handleNotificationChannelCheer(_ *BackendContext, _ *Config, r *Responce, r
 
 func handleNotificationStreamOnline(_ *BackendContext, cfg *Config, r *Responce, raw []byte, s *TwitchStats) {
 	path := buildLogPath(cfg)
-	_, statsLogger = buildLogger(cfg, path, cfg.IsDebug())
+	_, statsLogger = buildLogger(cfg, path)
 
 	v := &ResponceStreamOnline{}
 	err := json.Unmarshal(raw, &v)
