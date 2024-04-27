@@ -62,13 +62,13 @@ func Issue1stTimeAuthentication(cfg *Config) error {
 }
 
 func ConfirmAccessToken(cfg *Config) error {
-	var err error
 	if e := cfg.LoadAuthConfig(); e != nil {
+		logger.Info("ConfirmAccessToken", slog.Any("msg", "LoadAuthConfig error. try to 1st auth"), slog.Any("ERR", e.Error()))
 		if e := Issue1stTimeAuthentication(cfg); e != nil {
 			return e
 		}
 	}
-	valid, name, id, err := confirmUserAccessToken(cfg)
+	valid, expires, name, id, err := confirmUserAccessToken(cfg)
 	if err != nil {
 		logger.Error("ConfirmUserAccessToken", slog.Any("ERR", err.Error()))
 		return err
@@ -77,7 +77,7 @@ func ConfirmAccessToken(cfg *Config) error {
 	if valid {
 		cfg.TargetUserId = id
 		cfg.TargetUser = name
-		logger.Info("ConfirmUserAccessToken", slog.Any("msg", "ok"))
+		logger.Info("ConfirmUserAccessToken", slog.Any("msg", "ok"), slog.Any("expired", expires))
 		return nil
 	}
 
@@ -88,18 +88,19 @@ func ConfirmAccessToken(cfg *Config) error {
 	}
 	cfg.UpdatAccessToken(AuthEntry{AuthCode: a, RefreshToken: r})
 	cfg.SaveAll()
-	_, name, id, _ = confirmUserAccessToken(cfg)
+	_, expires, name, id, _ = confirmUserAccessToken(cfg)
 	cfg.TargetUserId = id
 	cfg.TargetUser = name
+	logger.Info("ConfirmUserAccessToken", slog.Any("msg", "token refreshed"), slog.Any("expired", expires))
 	return nil
 }
 
-func confirmUserAccessToken(cfg *Config) (bool, string, string, error) {
-	valid, name, id, err := ValidateAccessToken(cfg)
+func confirmUserAccessToken(cfg *Config) (bool, int, string, string, error) {
+	valid, expires, name, id, err := ValidateAccessToken(cfg)
 	if err != nil {
 		logger.Error("ConfirmUserAccessToken", slog.Any("ERR", err.Error()))
-		return false, "", "", err
+		return false, 0, "", "", err
 	}
 	logger.Info("ConfirmUserAccessToken", slog.Any("valid", valid))
-	return valid, name, id, nil
+	return valid, expires, name, id, nil
 }

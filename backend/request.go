@@ -34,6 +34,7 @@ func issueRequest(r *http.Request, debug bool) ([]byte, int, error) {
 	case 200:
 	case 202:
 	default:
+		logger.Info("issueRequest", slog.Any("msg", "unexpected status"), slog.Any("Status", resp.Status), slog.Any("URL", r.URL), slog.Any("RawRet", string(byteArray)))
 		return nil, resp.StatusCode, fmt.Errorf("error responce. status[%v] msg[%v]", resp.StatusCode, string(byteArray))
 	}
 	return byteArray, resp.StatusCode, nil
@@ -154,29 +155,34 @@ func RefreshAccessToken(cfg *Config, refreshToken string) (string, string, error
 	return r.AccessToken, r.RefreshToken, nil
 }
 
-func ValidateAccessToken(cfg *Config) (bool, string, string, error) {
+func ValidateAccessToken(cfg *Config) (bool, int, string, string, error) {
 	req, err := http.NewRequest("GET", "https://id.twitch.tv/oauth2/validate", nil)
 	if err != nil {
 		logger.Error("ValidateAccessToken::http.NewRequest", slog.Any("ERR", err.Error()))
-		return false, "", "", err
+		return false, 0, "", "", err
 	}
 	req.Header.Set("Authorization", fmt.Sprintf("OAuth %s", cfg.AuthCode()))
 
 	byteArray, statusCode, err := issueRequest(req, cfg.IsDebug())
 	if statusCode == 401 {
-		return false, "", "", nil
+		logger.Info("ValidateAccessToken::401", slog.Any("raw", string(byteArray)))
+		return false, 0, "", "", nil
 	}
 	if err != nil {
-		return false, "", "", err
+		logger.Error("ValidateAccessToken::Error", slog.Any("ERR", err.Error()))
+		return false, 0, "", "", err
 	}
 
 	r := &ValidateTokenResponce{}
 	err = json.Unmarshal(byteArray, &r)
 	if err != nil {
 		logger.Error("json.Unmarshal", slog.Any("ERR", err.Error()))
-		return false, "", "", err
+		return false, 0, "", "", err
 	}
-	return statusCode == 200, r.Login, r.UserId, nil
+	if cfg.IsDebug() {
+		logger.Info("ValidateAccessToken", slog.Any("raw", r))
+	}
+	return statusCode == 200, r.ExpiresIn, r.Login, r.UserId, nil
 }
 
 func ReferTargetUserId(cfg *Config) (string, int, error) {
