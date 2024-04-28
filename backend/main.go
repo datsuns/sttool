@@ -124,7 +124,7 @@ func handleNotification(ctx *BackendContext, cfg *Config, r *Responce, raw []byt
 	return true
 }
 
-func progress(ctx *BackendContext, finishChan *chan ExitStatus, cfg *Config, conn *websocket.Conn, stats *TwitchStats) {
+func progress(ctx *BackendContext, finishChan *chan ExitStatus, firstTime bool, cfg *Config, conn *websocket.Conn, stats *TwitchStats) {
 	for {
 		r, raw, err := receive(cfg, conn)
 		if err != nil {
@@ -137,7 +137,7 @@ func progress(ctx *BackendContext, finishChan *chan ExitStatus, cfg *Config, con
 		case "session_welcome":
 			logger.Info("progress", slog.Any("event", "connected"))
 			handleSessionWelcome(ctx, cfg, r, raw, stats)
-			if ctx.CallBack.OnConnected != nil {
+			if firstTime && ctx.CallBack.OnConnected != nil {
 				ctx.CallBack.OnConnected()
 			}
 		case "session_keepalive":
@@ -218,11 +218,11 @@ func (c *BackendContext) GetOverlayPortNumber() int {
 	return c.Config.LocalPortNum()
 }
 
-func (c *BackendContext) ServeMain(fin *chan ExitStatus) *websocket.Conn {
+func (c *BackendContext) ServeMain(fin *chan ExitStatus, firstTime bool) *websocket.Conn {
 	conn, _ := connect(c.Config.IsLocalTest())
 
 	go func() {
-		progress(c, fin, c.Config, conn, c.Stats)
+		progress(c, fin, firstTime, c.Config, conn, c.Stats)
 	}()
 	return conn
 }
@@ -243,7 +243,7 @@ func (c *BackendContext) Serve() {
 	signal.Notify(interrupt, os.Interrupt)
 
 	fin = make(chan ExitStatus)
-	conn = c.ServeMain(&fin)
+	conn = c.ServeMain(&fin, true)
 
 	done := make(chan struct{})
 	StartWatcher(c.Config, done)
@@ -261,7 +261,7 @@ func (c *BackendContext) Serve() {
 				return
 			}
 			fin = make(chan ExitStatus)
-			conn = c.ServeMain(&fin)
+			conn = c.ServeMain(&fin, false)
 		case <-c.Refreshed:
 			logger.Info("Session Refreshed")
 			conn.Close()
