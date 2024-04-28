@@ -124,43 +124,6 @@ func handleNotification(ctx *BackendContext, cfg *Config, r *Responce, raw []byt
 	return true
 }
 
-func progress(ctx *BackendContext, finishChan *chan ExitStatus, firstTime bool, cfg *Config, conn *websocket.Conn, stats *TwitchStats) {
-	for {
-		r, raw, err := receive(cfg, conn)
-		if err != nil {
-			logger.Error("receive::progress", slog.Any("ERR", err.Error()))
-			*finishChan <- ConnectionCanceled
-			return
-		}
-		logger.Info("recv", slog.Any("Type", r.Metadata.MessageType))
-		switch r.Metadata.MessageType {
-		case "session_welcome":
-			logger.Info("progress", slog.Any("event", "connected"))
-			handleSessionWelcome(ctx, cfg, r, raw, stats)
-			if firstTime && ctx.CallBack.OnConnected != nil {
-				ctx.CallBack.OnConnected()
-			}
-		case "session_keepalive":
-			//logger.Info("progress", slog.Any("event", "keepalive"))
-			if ctx.CallBack.KeepAlive != nil {
-				ctx.CallBack.KeepAlive()
-			}
-		case "session_reconnect":
-			logger.Info("progress", slog.Any("event", "reconnect"))
-		case "notification":
-			logger.Info("event: notification")
-			if !handleNotification(ctx, cfg, r, raw, stats) {
-				*finishChan <- StreamFinished
-				return
-			}
-		case "revocation":
-			logger.Info("progress", slog.Any("event", "revocation"))
-		default:
-			logger.Error("progress::UNKNOWN", slog.Any("Type", r.Metadata.MessageType))
-		}
-	}
-}
-
 func buildLogPath(cfg *Config) string {
 	if _, e := os.Stat(cfg.LogPath()); e != nil {
 		os.MkdirAll(cfg.LogPath(), 0750)
@@ -218,11 +181,48 @@ func (c *BackendContext) GetOverlayPortNumber() int {
 	return c.Config.LocalPortNum()
 }
 
+func (c *BackendContext) Progress(finishChan *chan ExitStatus, firstTime bool, conn *websocket.Conn) {
+	for {
+		r, raw, err := receive(c.Config, conn)
+		if err != nil {
+			logger.Error("receive::progress", slog.Any("ERR", err.Error()))
+			*finishChan <- ConnectionCanceled
+			return
+		}
+		logger.Info("recv", slog.Any("Type", r.Metadata.MessageType))
+		switch r.Metadata.MessageType {
+		case "session_welcome":
+			logger.Info("progress", slog.Any("event", "connected"))
+			handleSessionWelcome(c, c.Config, r, raw, c.Stats)
+			if firstTime && c.CallBack.OnConnected != nil {
+				c.CallBack.OnConnected()
+			}
+		case "session_keepalive":
+			//logger.Info("progress", slog.Any("event", "keepalive"))
+			if c.CallBack.KeepAlive != nil {
+				c.CallBack.KeepAlive()
+			}
+		case "session_reconnect":
+			logger.Info("progress", slog.Any("event", "reconnect"))
+		case "notification":
+			logger.Info("event: notification")
+			if !handleNotification(c, c.Config, r, raw, c.Stats) {
+				*finishChan <- StreamFinished
+				return
+			}
+		case "revocation":
+			logger.Info("progress", slog.Any("event", "revocation"))
+		default:
+			logger.Error("progress::UNKNOWN", slog.Any("Type", r.Metadata.MessageType))
+		}
+	}
+}
+
 func (c *BackendContext) ServeMain(fin *chan ExitStatus, firstTime bool) *websocket.Conn {
 	conn, _ := connect(c.Config.IsLocalTest())
 
 	go func() {
-		progress(c, fin, firstTime, c.Config, conn, c.Stats)
+		c.Progress(fin, firstTime, conn)
 	}()
 	return conn
 }
