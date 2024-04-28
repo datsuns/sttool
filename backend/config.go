@@ -128,17 +128,29 @@ func (c *Config) Save() error {
 	return c.SaveTo(ConfigFilePath)
 }
 
-func (c *Config) SaveAll() error {
+func (c *Config) SaveAuthTo(dest string) error {
 	var err error
-	if err = c.Save(); err != nil {
-		return err
-	}
 	auth, err := yaml.Marshal(c.Auth)
 	if err != nil {
 		return err
 	}
 	err = os.WriteFile(AuthInfoFile, auth, 0644)
 	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (c *Config) SaveAuth() error {
+	return c.SaveAuthTo(AuthInfoFile)
+}
+
+func (c *Config) SaveAll() error {
+	var err error
+	if err = c.Save(); err != nil {
+		return err
+	}
+	if err = c.SaveAuth(); err != nil {
 		return err
 	}
 	return nil

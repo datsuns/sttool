@@ -8,7 +8,7 @@ import (
 	"time"
 )
 
-type CreateRequestBuilder func(*Config, *Responce, string, string) []byte
+type CreateRequestBuilder func(*Config, string, string, string) []byte
 type NotificationHandler func(*BackendContext, *Config, *Responce, []byte, *TwitchStats)
 
 type EventTableEntry struct {
@@ -43,14 +43,14 @@ func typeToLogTitle(t string) string {
 	}
 }
 
-func buildRequestWithModerator(cfg *Config, r *Responce, subscType, version string) []byte {
+func buildRequestWithModerator(cfg *Config, sessionID, subscType, version string) []byte {
 	c := RequestConditionWithModerator{
 		BroadcasterUserId: cfg.TargetUserId,
 		ModeratorUserId:   cfg.TargetUserId,
 	}
 	t := SubscriptionTransport{
 		Method:    "websocket",
-		SessionId: r.Payload.Session.Id,
+		SessionId: sessionID,
 	}
 	body := CreateSubscriptionBodyWithModerator{
 		Type:      subscType,
@@ -62,13 +62,13 @@ func buildRequestWithModerator(cfg *Config, r *Responce, subscType, version stri
 	return bin
 }
 
-func buildRequest(cfg *Config, r *Responce, subscType, version string) []byte {
+func buildRequest(cfg *Config, sessionID, subscType, version string) []byte {
 	c := RequestCondition{
 		BroadcasterUserId: cfg.TargetUserId,
 	}
 	t := SubscriptionTransport{
 		Method:    "websocket",
-		SessionId: r.Payload.Session.Id,
+		SessionId: sessionID,
 	}
 	body := CreateSubscriptionBody{
 		Type:      subscType,
@@ -80,14 +80,14 @@ func buildRequest(cfg *Config, r *Responce, subscType, version string) []byte {
 	return bin
 }
 
-func buildRequestWithUser(cfg *Config, r *Responce, subscType, version string) []byte {
+func buildRequestWithUser(cfg *Config, sessionID, subscType, version string) []byte {
 	c := RequestConditionWithUser{
 		BroadcasterUserId: cfg.TargetUserId,
 		UserId:            cfg.TargetUserId,
 	}
 	t := SubscriptionTransport{
 		Method:    "websocket",
-		SessionId: r.Payload.Session.Id,
+		SessionId: sessionID,
 	}
 	body := CreateSubscriptionBodyWithUser{
 		Type:      subscType,
@@ -99,13 +99,13 @@ func buildRequestWithUser(cfg *Config, r *Responce, subscType, version string) [
 	return bin
 }
 
-func buildRequestWithFromUser(cfg *Config, r *Responce, subscType, version string) []byte {
+func buildRequestWithFromUser(cfg *Config, sessionID, subscType, version string) []byte {
 	c := RequestConditionWithFromUser{
 		FromBroadcasterUserId: cfg.TargetUserId,
 	}
 	t := SubscriptionTransport{
 		Method:    "websocket",
-		SessionId: r.Payload.Session.Id,
+		SessionId: sessionID,
 	}
 	body := CreateSubscriptionBodyWithFromUser{
 		Type:      subscType,

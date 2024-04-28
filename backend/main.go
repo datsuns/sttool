@@ -37,10 +37,12 @@ type CallBack struct {
 	OnConnected ConnectedCallback
 }
 type BackendContext struct {
-	CallBack *CallBack
-	Config   *Config
-	Overlay  *OverlayContext
-	Stats    *TwitchStats
+	CallBack  *CallBack
+	Config    *Config
+	Overlay   *OverlayContext
+	Stats     *TwitchStats
+	Session   *SessionLifecycle
+	Refreshed chan struct{}
 }
 
 var (
@@ -88,12 +90,12 @@ func receive(cfg *Config, conn *websocket.Conn) (*Responce, []byte, error) {
 }
 
 // https://dev.twitch.tv/docs/eventsub/eventsub-subscription-types/#subscription-types
-func handleSessionWelcome(cfg *Config, r *Responce, _ []byte, _ *TwitchStats) {
+func handleSessionWelcome(ctx *BackendContext, cfg *Config, r *Responce, _ []byte, _ *TwitchStats) {
 	if cfg.IsLocalTest() {
-		return
+		//return
 	}
 	for k, v := range TwitchEventTable {
-		err := createEventSubscription(cfg, r, k, &v)
+		err := createEventSubscription(cfg, r.Payload.Session.Id, k, &v)
 		if err != nil {
 			logger.Error("handleSessionWelcome::createEventSubscription", slog.Any("ERR", err.Error()))
 		}
@@ -117,13 +119,14 @@ func progress(ctx *BackendContext, _ *chan struct{}, cfg *Config, conn *websocke
 	for {
 		r, raw, err := receive(cfg, conn)
 		if err != nil {
+			logger.Error("receive::progress", slog.Any("ERR", err.Error()))
 			break
 		}
 		logger.Info("recv", slog.Any("Type", r.Metadata.MessageType))
 		switch r.Metadata.MessageType {
 		case "session_welcome":
 			logger.Info("progress", slog.Any("event", "connected"))
-			handleSessionWelcome(cfg, r, raw, stats)
+			handleSessionWelcome(ctx, cfg, r, raw, stats)
 			if ctx.CallBack.OnConnected != nil {
 				ctx.CallBack.OnConnected()
 			}
@@ -195,6 +198,8 @@ func NewBackend(callback *CallBack) *BackendContext {
 	logger, statsLogger = buildLogger(cfg, path)
 	ctx.Stats = NewTwitchStats()
 	ctx.Overlay = NewOverlay(cfg)
+	ctx.Refreshed = make(chan struct{})
+	ctx.Session = NewSessionLifecycle(&ctx.Refreshed, cfg)
 	return ctx
 }
 
@@ -202,25 +207,34 @@ func (c *BackendContext) GetOverlayPortNumber() int {
 	return c.Config.LocalPortNum()
 }
 
+func (c *BackendContext) ServeMain(done *chan struct{}) *websocket.Conn {
+	conn, _ := connect(c.Config.IsLocalTest())
+
+	go func() {
+		defer close(*done)
+		progress(c, done, c.Config, conn, c.Stats)
+	}()
+	return conn
+}
+
 func (c *BackendContext) Serve() {
+	var done chan struct{}
+	var conn *websocket.Conn
 	statsLogger.Info("ToolVersion", slog.Any(LogFieldName_Type, "ToolVersion"), slog.Any("value", ToolVersion))
-	if e := ConfirmAccessToken(c.Config); e != nil {
-		logger.Error("Serve", slog.Any("msg", "ConfirmAccessToken"), slog.Any("ERR", e.Error()))
+	expires, err := ConfirmAccessToken(c.Config)
+	if err != nil {
+		logger.Error("Serve", slog.Any("msg", "ConfirmAccessToken"), slog.Any("ERR", err.Error()))
 		return
 	}
 	statsLogger.Info("Start", slog.Any(LogFieldName_Type, "TargetUser"), slog.Any("name", c.Config.UserName()), slog.Any("id", c.Config.UserId()))
+	c.Session.Serve(expires)
 
 	interrupt := make(chan os.Signal, 1)
 	signal.Notify(interrupt, os.Interrupt)
 
-	conn, _ := connect(c.Config.IsLocalTest())
-	defer conn.Close()
+	done = make(chan struct{})
+	conn = c.ServeMain(&done)
 
-	done := make(chan struct{})
-	go func() {
-		defer close(done)
-		progress(c, &done, c.Config, conn, c.Stats)
-	}()
 	StartWatcher(c.Config, done)
 	if c.Config.OverlayEnabled() {
 		c.Overlay.Serve(c.Config)
@@ -230,9 +244,15 @@ func (c *BackendContext) Serve() {
 		select {
 		case <-done:
 			logger.Info("done")
-			return
+			//return
+			done = make(chan struct{})
+			conn = c.ServeMain(&done)
+		case <-c.Refreshed:
+			logger.Info("Session Refreshed")
+			conn.Close()
 		case <-interrupt:
 			logger.Info("interrupt")
+			c.Session.Shutdown()
 
 			// Cleanly close the connection by sending a close message and then
 			// waiting (with timeout) for the server to close the connection.
