@@ -36,6 +36,15 @@ type CallBack struct {
 	OnRaid      RaidCallback
 	OnConnected ConnectedCallback
 }
+
+type ExitStatus int
+
+const (
+	StreamFinished ExitStatus = iota
+	ConnectionCanceled
+	ConnectionError
+)
+
 type BackendContext struct {
 	CallBack  *CallBack
 	Config    *Config
@@ -115,12 +124,13 @@ func handleNotification(ctx *BackendContext, cfg *Config, r *Responce, raw []byt
 	return true
 }
 
-func progress(ctx *BackendContext, _ *chan struct{}, cfg *Config, conn *websocket.Conn, stats *TwitchStats) {
+func progress(ctx *BackendContext, finishChan *chan ExitStatus, cfg *Config, conn *websocket.Conn, stats *TwitchStats) {
 	for {
 		r, raw, err := receive(cfg, conn)
 		if err != nil {
 			logger.Error("receive::progress", slog.Any("ERR", err.Error()))
-			break
+			*finishChan <- ConnectionCanceled
+			return
 		}
 		logger.Info("recv", slog.Any("Type", r.Metadata.MessageType))
 		switch r.Metadata.MessageType {
@@ -140,6 +150,7 @@ func progress(ctx *BackendContext, _ *chan struct{}, cfg *Config, conn *websocke
 		case "notification":
 			logger.Info("event: notification")
 			if !handleNotification(ctx, cfg, r, raw, stats) {
+				*finishChan <- StreamFinished
 				return
 			}
 		case "revocation":
@@ -207,18 +218,17 @@ func (c *BackendContext) GetOverlayPortNumber() int {
 	return c.Config.LocalPortNum()
 }
 
-func (c *BackendContext) ServeMain(done *chan struct{}) *websocket.Conn {
+func (c *BackendContext) ServeMain(fin *chan ExitStatus) *websocket.Conn {
 	conn, _ := connect(c.Config.IsLocalTest())
 
 	go func() {
-		defer close(*done)
-		progress(c, done, c.Config, conn, c.Stats)
+		progress(c, fin, c.Config, conn, c.Stats)
 	}()
 	return conn
 }
 
 func (c *BackendContext) Serve() {
-	var done chan struct{}
+	var fin chan ExitStatus
 	var conn *websocket.Conn
 	statsLogger.Info("ToolVersion", slog.Any(LogFieldName_Type, "ToolVersion"), slog.Any("value", ToolVersion))
 	expires, err := ConfirmAccessToken(c.Config)
@@ -232,9 +242,10 @@ func (c *BackendContext) Serve() {
 	interrupt := make(chan os.Signal, 1)
 	signal.Notify(interrupt, os.Interrupt)
 
-	done = make(chan struct{})
-	conn = c.ServeMain(&done)
+	fin = make(chan ExitStatus)
+	conn = c.ServeMain(&fin)
 
+	done := make(chan struct{})
 	StartWatcher(c.Config, done)
 	if c.Config.OverlayEnabled() {
 		c.Overlay.Serve(c.Config)
@@ -242,11 +253,15 @@ func (c *BackendContext) Serve() {
 
 	for {
 		select {
-		case <-done:
-			logger.Info("done")
+		case status := <-fin:
 			//return
-			done = make(chan struct{})
-			conn = c.ServeMain(&done)
+			if status == StreamFinished {
+				logger.Info("stream finished exit serve")
+				done <- struct{}{}
+				return
+			}
+			fin = make(chan ExitStatus)
+			conn = c.ServeMain(&fin)
 		case <-c.Refreshed:
 			logger.Info("Session Refreshed")
 			conn.Close()
@@ -261,8 +276,9 @@ func (c *BackendContext) Serve() {
 				logger.Error("write close", slog.Any("ERR", err.Error()))
 				return
 			}
+			conn.Close()
 			select {
-			case <-done:
+			case <-fin:
 			case <-time.After(time.Second):
 			}
 			return
