@@ -99,7 +99,7 @@ func receive(cfg *Config, conn *websocket.Conn) (*Responce, []byte, error) {
 }
 
 // https://dev.twitch.tv/docs/eventsub/eventsub-subscription-types/#subscription-types
-func handleSessionWelcome(ctx *BackendContext, cfg *Config, r *Responce, _ []byte, _ *TwitchStats) {
+func handleSessionWelcome(_ *BackendContext, cfg *Config, r *Responce, _ []byte, _ *TwitchStats) {
 	if cfg.IsLocalTest() {
 		//return
 	}
