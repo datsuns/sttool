@@ -87,8 +87,16 @@ func ConfirmAccessToken(cfg *Config) (int, error) {
 		return 0, err
 	}
 	cfg.UpdatAccessToken(AuthEntry{AuthCode: a, RefreshToken: r})
+	valid, expires, name, id, err = confirmUserAccessToken(cfg)
+	if err != nil {
+		logger.Error("ConfirmUserAccessToken2", slog.Any("ERR", err.Error()))
+		return 0, err
+	}
+	if !valid {
+		logger.Error("ConfirmUserAccessToken", slog.Any("msg", "token still invalid"))
+		return 0, fmt.Errorf("Token still invalid")
+	}
 	cfg.SaveAll()
-	_, expires, name, id, _ = confirmUserAccessToken(cfg)
 	cfg.TargetUserId = id
 	cfg.TargetUser = name
 	logger.Info("ConfirmUserAccessToken", slog.Any("msg", "token refreshed"), slog.Any("expired", expires))
