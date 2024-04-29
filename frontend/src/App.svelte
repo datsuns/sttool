@@ -2,15 +2,14 @@
   import { onMount } from "svelte";
   import { writable } from "svelte/store";
   import Drawer from "@smui/drawer";
-  import TopAppBar, {
-    Row,
-    Section,
-    Title,
-    AutoAdjust,
-  } from "@smui/top-app-bar";
+  import TopAppBar from "@smui/top-app-bar";
   import IconButton, { Icon } from "@smui/icon-button";
   import List, { Item } from "@smui/list";
-  import { GetServerPort, LoadConfig } from "../wailsjs/go/main/App.js";
+  import {
+    GetServerPort,
+    LoadConfig,
+    SaveConfig,
+  } from "../wailsjs/go/main/App.js";
   import { LogPrint, EventsOn } from "../wailsjs/runtime/runtime";
   import MainScreen from "./MainScreen.svelte";
   import ConfigScreen from "./ConfigScreen.svelte";
@@ -54,6 +53,12 @@
     });
     Clips = [...Clips, entry];
   });
+
+  function onConfigChanged(event) {
+    let cfg = event.detail.value;
+    //LogPrint(`cfg changed ${cfg.OverlayEnabled}`);
+    SaveConfig(cfg);
+  }
 </script>
 
 <main>
@@ -93,7 +98,7 @@
         raidUserClips={Clips}
       />
     {:else if $currentScreen === "settings"}
-      <ConfigScreen {Config} />
+      <ConfigScreen {Config} on:changed={onConfigChanged} />
     {/if}
   </div>
 </main>
