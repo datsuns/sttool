@@ -41,7 +41,7 @@
 
   EventsOn("OnConnected", (msg) => {
     LogPrint(`App:OnConnected ${msg}`);
-    mainScreenRef.handleOnConnected(msg);
+    mainScreenRef.handleOnConnected(msg, Config.DebugMode);
   });
 
   EventsOn("OnRaid", (msg, username, items) => {

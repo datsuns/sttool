@@ -34,9 +34,11 @@
         LogPrint("stop Clip");
     };
 
-    export function handleOnConnected(msg) {
+    export function handleOnConnected(msg, debugMode) {
         LogPrint(`MainScreen:handleOnConnected ${msg}`);
-        DebugRaidTest("datsuns7");
+        if (debugMode) {
+            DebugRaidTest("datsuns7");
+        }
     }
 </script>
 
