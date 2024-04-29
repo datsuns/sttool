@@ -87,7 +87,7 @@ func (o *OverlayContext) StopClip() {
 	logger.Info("Overlay:forceStop")
 }
 
-func (o *OverlayContext) OnEvent(w http.ResponseWriter, r *http.Request, clipWidth, clipHeight int) {
+func (o *OverlayContext) OnEvent(w http.ResponseWriter, r *http.Request, cfg *Config) {
 	w.Header().Set("Content-Type", "text/event-stream")
 	w.Header().Set("Cache-Control", "no-cache")
 	w.Header().Set("Connection", "keep-alive")
@@ -98,9 +98,14 @@ func (o *OverlayContext) OnEvent(w http.ResponseWriter, r *http.Request, clipWid
 		src := o.ClipUrl
 		fmt.Fprintf(w,
 			"event: on\ndata: {\"src\": \"%s\", \"width\": \"%v\", \"height\": \"%v\"}\n\n",
-			src, clipWidth, clipHeight,
+			src, cfg.CipWidth(), cfg.CipHeight(),
 		)
-		logger.Info("Ovelay:ON", slog.Any("clip ID", o.ClipUrl), slog.Any("URL", src))
+		logger.Info("Ovelay:ON",
+			slog.Any("clip ID", o.ClipUrl),
+			slog.Any("URL", src),
+			slog.Any("x", cfg.CipWidth()),
+			slog.Any("y", cfg.CipHeight()),
+		)
 	case <-o.ChannStopClip:
 		fmt.Fprintf(w, "event: off\ndata: {}\n\n")
 		logger.Info("Ovelay:OFF")
@@ -113,15 +118,15 @@ func (o *OverlayContext) OnEvent(w http.ResponseWriter, r *http.Request, clipWid
 
 }
 
-func (o *OverlayContext) Main(serverPort, clipWidth, clipHeight int) {
+func (o *OverlayContext) Main(cfg *Config) {
 	logger.Info("Ovelay:Start")
 	http.HandleFunc("/events", func(w http.ResponseWriter, r *http.Request) {
-		o.OnEvent(w, r, clipWidth, clipHeight)
+		o.OnEvent(w, r, cfg)
 	})
 	http.HandleFunc("/", rootDocument)
 
 	if err := http.ListenAndServe(
-		fmt.Sprintf(":%v", serverPort),
+		fmt.Sprintf(":%v", cfg.LocalPortNum()),
 		nil,
 	); err != nil {
 		logger.Error("Ovelay:ERROR", slog.Any("error", err.Error))
@@ -132,10 +137,6 @@ func (o *OverlayContext) Main(serverPort, clipWidth, clipHeight int) {
 
 func (o *OverlayContext) Serve(cfg *Config) {
 	go func() {
-		o.Main(
-			cfg.LocalPortNum(),
-			cfg.CipWidth(),
-			cfg.CipHeight(),
-		)
+		o.Main(cfg)
 	}()
 }

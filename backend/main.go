@@ -292,7 +292,7 @@ func (c *BackendContext) LoadConfig() *ConfigBody {
 
 func (c *BackendContext) SaveConfig(cfg *ConfigBody) {
 	c.Config.UpdateRaw(cfg)
-	if e := c.Config.SaveAll(); e != nil {
+	if e := c.Config.Save(); e != nil {
 		logger.Error("SaveConfig", slog.Any("ERR", e.Error()))
 	}
 }
