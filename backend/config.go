@@ -249,10 +249,10 @@ func (c *Config) ObsPass() string {
 	return c.Body.ObsPass
 }
 
-func (c *Config) CipWidth() int {
+func (c *Config) ClipWidth() int {
 	return c.Body.ClipPlayerWidth
 }
 
-func (c *Config) CipHeight() int {
+func (c *Config) ClipHeight() int {
 	return c.Body.ClipPlayerHeight
 }

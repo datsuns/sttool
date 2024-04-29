@@ -98,13 +98,13 @@ func (o *OverlayContext) OnEvent(w http.ResponseWriter, r *http.Request, cfg *Co
 		src := o.ClipUrl
 		fmt.Fprintf(w,
 			"event: on\ndata: {\"src\": \"%s\", \"width\": \"%v\", \"height\": \"%v\"}\n\n",
-			src, cfg.CipWidth(), cfg.CipHeight(),
+			src, cfg.ClipWidth(), cfg.ClipHeight(),
 		)
 		logger.Info("Ovelay:ON",
 			slog.Any("clip ID", o.ClipUrl),
 			slog.Any("URL", src),
-			slog.Any("x", cfg.CipWidth()),
-			slog.Any("y", cfg.CipHeight()),
+			slog.Any("x", cfg.ClipWidth()),
+			slog.Any("y", cfg.ClipHeight()),
 		)
 	case <-o.ChannStopClip:
 		fmt.Fprintf(w, "event: off\ndata: {}\n\n")

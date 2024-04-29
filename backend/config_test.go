@@ -70,11 +70,11 @@ func TestConfig_DontUpdateSavedData(t *testing.T) {
 	if !cfg.IsDebug() {
 		t.Errorf("invalid debug mode flag true != %v", cfg.IsDebug())
 	}
-	if cfg.CipWidth() != 300 {
-		t.Errorf("invalid clip window width 300 != %v", cfg.CipWidth())
+	if cfg.ClipWidth() != 300 {
+		t.Errorf("invalid clip window width 300 != %v", cfg.ClipWidth())
 	}
-	if cfg.CipHeight() != 480 {
-		t.Errorf("invalid clip window height 480 != %v", cfg.CipHeight())
+	if cfg.ClipHeight() != 480 {
+		t.Errorf("invalid clip window height 480 != %v", cfg.ClipHeight())
 	}
 
 	if err := cfg.SaveTo(dest2); err != nil {
@@ -85,8 +85,8 @@ func TestConfig_DontUpdateSavedData(t *testing.T) {
 	if err != nil {
 		t.Errorf("file load error %v", err.Error())
 	}
-	if cfg.CipHeight() != 480 {
-		t.Errorf("invalid clip window height 480 != %v", cfg.CipHeight())
+	if cfg.ClipHeight() != 480 {
+		t.Errorf("invalid clip window height 480 != %v", cfg.ClipHeight())
 	}
 	os.Remove(dest)
 	os.Remove(dest2)
