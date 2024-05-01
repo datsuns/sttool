@@ -58,6 +58,10 @@ func (a *App) OpenURL(url string) {
 	}
 }
 
+func (a *App) StopObsStream() {
+	a.Backend.StopObsStream()
+}
+
 func (a *App) OnKeepAliveCallback() {
 	//runtime.LogDebug(a.ctx, "KeepAlive")
 	//runtime.EventsEmit(a.ctx, "testevent", "event from backend", a.Items)

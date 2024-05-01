@@ -13,7 +13,8 @@ type ConfigBody struct {
 	DebugMode                  bool     `yaml:"DEBUG"`
 	LocalTest                  bool     `yaml:"LOCAL_TEST"`
 	LogDest                    string   `yaml:"LOG_DEST"`
-	ObsUrl                     string   `yaml:"OBS_URL"`
+	ObsIp                      string   `yaml:"OBS_IP"`
+	ObsPort                    int      `yaml:"OBS_PORT"`
 	ObsPass                    string   `yaml:"OBS_PASS"`
 	DelayMinutesFromRaidToStop int      `yaml:"DELAY_TO_STOP"`
 	NewClipWatchIntervalSecond int      `yaml:"NEW_CLIP_INTERVAL"`
@@ -46,7 +47,6 @@ var (
 		DebugMode:                  false,
 		LocalTest:                  false,
 		LogDest:                    ".",
-		ObsUrl:                     "",
 		ObsPass:                    "",
 		DelayMinutesFromRaidToStop: 3,
 		NewClipWatchIntervalSecond: 128,
@@ -241,8 +241,12 @@ func (c *Config) ClipWatchInterval() int {
 	return c.Body.NewClipWatchIntervalSecond
 }
 
-func (c *Config) ObsUrl() string {
-	return c.Body.ObsUrl
+func (c *Config) ObsIp() string {
+	return c.Body.ObsIp
+}
+
+func (c *Config) ObsPort() int {
+	return c.Body.ObsPort
 }
 
 func (c *Config) ObsPass() string {

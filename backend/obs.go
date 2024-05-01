@@ -1,13 +1,15 @@
 package backend
 
 import (
+	"fmt"
 	"log/slog"
 
 	"github.com/andreykaipov/goobs"
 )
 
 func StopObsStream(cfg *Config) {
-	client, err := goobs.New(cfg.ObsUrl(), goobs.WithPassword(cfg.ObsPass()))
+	url := fmt.Sprintf("%v:%v", cfg.ObsIp(), cfg.ObsPort())
+	client, err := goobs.New(url, goobs.WithPassword(cfg.ObsPass()))
 	if err != nil {
 		logger.Error("OBS Connect ERROR", slog.Any("err", err.Error()))
 		return

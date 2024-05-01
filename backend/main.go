@@ -296,3 +296,7 @@ func (c *BackendContext) SaveConfig(cfg *ConfigBody) {
 		logger.Error("SaveConfig", slog.Any("ERR", e.Error()))
 	}
 }
+
+func (c *BackendContext) StopObsStream() {
+	StopObsStream(c.Config)
+}
