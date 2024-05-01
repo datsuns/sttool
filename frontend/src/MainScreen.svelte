@@ -32,11 +32,11 @@
         await DebugRaidTest(dbg_RaidUser);
     };
 
-    function startClipTest(url, duration) {
+    function startClip(url, duration) {
         StartClip(url, duration).then((result) => LogPrint("Clip finished"));
     }
 
-    const stopClipTest = async () => {
+    const stopClip = async () => {
         await StopClip();
         LogPrint("stop Clip");
     };
@@ -57,7 +57,7 @@
     />
     <button on:click={callDebugRaidTest}>raid test</button>
 {/if}
-<button on:click={stopClipTest}>クリップ強制停止</button>
+<button on:click={stopClip}>クリップ強制停止</button>
 {#each raidUserClips.slice().reverse() as clip}
     <h1>{clip.name} さんのクリップ</h1>
     {#if clip.body.length == 0}
@@ -70,7 +70,7 @@
                 <Cell span={4}>
                     <div style="height: 100%;">
                         <Clip
-                            startClipCallback={startClipTest}
+                            startClipCallback={startClip}
                             Url={c.Mp4}
                             Title={c.Title}
                             Thumnail={c.Thumbnail}
