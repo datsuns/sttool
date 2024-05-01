@@ -286,14 +286,35 @@ func (c *BackendContext) Serve() {
 	}
 }
 
+func (c *BackendContext) NeedReload(newCfg *ConfigBody) bool {
+	if c.Config.LogPath() != newCfg.LogDest {
+		return true
+	} else if c.Config.OverlayEnabled() != newCfg.OverlayEnabled {
+		return true
+	}
+	return false
+}
+
+func (c *BackendContext) Reload() error {
+	path := buildLogPath(c.Config)
+	logger, statsLogger = buildLogger(c.Config, path)
+	return nil
+}
+
 func (c *BackendContext) LoadConfig() *ConfigBody {
 	return c.Config.LoadRaw()
 }
 
 func (c *BackendContext) SaveConfig(cfg *ConfigBody) {
+	shouldReload := c.NeedReload(cfg)
 	c.Config.UpdateRaw(cfg)
 	if e := c.Config.Save(); e != nil {
 		logger.Error("SaveConfig", slog.Any("ERR", e.Error()))
+	}
+	if shouldReload {
+		if e := c.Reload(); e != nil {
+			logger.Error("Reload", slog.Any("ERR", e.Error()))
+		}
 	}
 }
 
