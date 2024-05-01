@@ -7,6 +7,7 @@
         OpenURL,
         StartClip,
         StopClip,
+        StopObsStream,
         DebugRaidTest,
     } from "../wailsjs/go/main/App.js";
     import { LogPrint, EventsOn } from "../wailsjs/runtime/runtime";
@@ -41,6 +42,11 @@
         LogPrint("stop Clip");
     };
 
+    const stopStream = async () => {
+        await StopObsStream();
+        LogPrint("stream stopped");
+    };
+
     export function handleOnConnected(msg) {
         LogPrint(`MainScreen:handleOnConnected ${msg}`);
         if (debugMode) {
@@ -56,6 +62,7 @@
         placeholder="レイドテスト用(ユーザID)"
     />
     <button on:click={callDebugRaidTest}>raid test</button>
+    <button on:click={stopStream}>配信停止</button>
 {/if}
 <button on:click={stopClip}>クリップ強制停止</button>
 {#each raidUserClips.slice().reverse() as clip}

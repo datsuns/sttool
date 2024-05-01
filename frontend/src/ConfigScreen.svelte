@@ -30,6 +30,21 @@
     //LogPrint(`Notify fired! Detail: ${event.detail.value}`);
     issueDispatch(Config);
   }
+  function onTextConfigChanged(event, type) {
+    //LogPrint(`Notify fired! Detail: ${event.detail.value}`);
+    switch (type) {
+      case "obsip":
+        Config.ObsIp = event.detail.value;
+        break;
+      case "obspass":
+        Config.ObsPass = event.detail.value;
+        break;
+      default:
+        LogPrint(`onTextConfigChanged: invalid type: ${type}`);
+        return;
+    }
+    issueDispatch(Config);
+  }
   function onNumberConfigChanged(event, type) {
     LogPrint(`Notify fired! Detail: ${event.detail.value}`);
     let v = Number(event.detail.value);
@@ -47,8 +62,11 @@
       case "port":
         Config.LocalServerPortNumber = v;
         break;
+      case "obsport":
+        Config.ObsPort = v;
+        break;
       default:
-        LogPrint(`invalid type: ${type}`);
+        LogPrint(`onNumberConfigChanged invalid type: ${type}`);
         return;
     }
     issueDispatch(Config);
@@ -86,6 +104,31 @@
       labelText="高さ"
       valueType="number"
       on:changed={(e) => onNumberConfigChanged(e, "height")}
+    ></TextConfig>
+  </Paper>
+</Paper>
+
+<Paper>
+  <Content>OBS連携</Content>
+  <Paper square variant="outlined">
+    <Content>websocketサーバー</Content>
+    <TextConfig
+      value={Config.ObsIp}
+      labelText="サーバーIP"
+      valueType="text"
+      on:changed={(e) => onTextConfigChanged(e, "obsip")}
+    ></TextConfig>
+    <TextConfig
+      value={Config.ObsPort}
+      labelText="サーバーポート"
+      valueType="number"
+      on:changed={(e) => onNumberConfigChanged(e, "obsport")}
+    ></TextConfig>
+    <TextConfig
+      value={Config.ObsPass}
+      labelText="サーバーパスワード"
+      valueType="text"
+      on:changed={(e) => onTextConfigChanged(e, "obspass")}
     ></TextConfig>
   </Paper>
 </Paper>

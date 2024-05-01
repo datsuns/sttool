@@ -22,3 +22,5 @@ export function SaveConfig(arg1:main.AppConfig):Promise<void>;
 export function StartClip(arg1:string,arg2:number):Promise<void>;
 
 export function StopClip():Promise<void>;
+
+export function StopObsStream():Promise<void>;

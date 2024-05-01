@@ -41,3 +41,7 @@ export function StartClip(arg1, arg2) {
 export function StopClip() {
   return window['go']['main']['App']['StopClip']();
 }
+
+export function StopObsStream() {
+  return window['go']['main']['App']['StopObsStream']();
+}
