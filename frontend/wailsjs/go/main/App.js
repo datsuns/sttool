@@ -26,6 +26,14 @@ export function OnRaidCallback(arg1) {
   return window['go']['main']['App']['OnRaidCallback'](arg1);
 }
 
+export function OpenDiectoryDialog(arg1) {
+  return window['go']['main']['App']['OpenDiectoryDialog'](arg1);
+}
+
+export function OpenFileDialog(arg1, arg2) {
+  return window['go']['main']['App']['OpenFileDialog'](arg1, arg2);
+}
+
 export function OpenURL(arg1) {
   return window['go']['main']['App']['OpenURL'](arg1);
 }

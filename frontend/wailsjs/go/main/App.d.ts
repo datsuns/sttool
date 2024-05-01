@@ -15,6 +15,10 @@ export function OnKeepAliveCallback():Promise<void>;
 
 export function OnRaidCallback(arg1:backend.RaidCallbackParam):Promise<void>;
 
+export function OpenDiectoryDialog(arg1:string):Promise<string>;
+
+export function OpenFileDialog(arg1:string,arg2:string):Promise<string>;
+
 export function OpenURL(arg1:string):Promise<void>;
 
 export function SaveConfig(arg1:main.AppConfig):Promise<void>;

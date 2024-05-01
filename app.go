@@ -3,6 +3,8 @@ package main
 import (
 	"context"
 	"fmt"
+	"path/filepath"
+	"strings"
 	"sttool/backend"
 
 	"github.com/pkg/browser"
@@ -60,6 +62,37 @@ func (a *App) OpenURL(url string) {
 
 func (a *App) StopObsStream() {
 	a.Backend.StopObsStream()
+}
+
+func (a *App) OpenFileDialog(prev, filter string) string {
+	filters := []runtime.FileFilter{}
+	for _, f := range strings.Split(filter, ",") {
+		filters = append(filters, runtime.FileFilter{Pattern: f})
+	}
+	opt := runtime.OpenDialogOptions{
+		DefaultDirectory: filepath.Dir(prev),
+		Title:            "ファイル選択",
+		Filters:          filters,
+	}
+	selected, err := runtime.OpenFileDialog(a.ctx, opt)
+	if err != nil {
+		runtime.LogError(a.ctx, fmt.Sprintf("OpenFileDialog:ERR %v", err.Error()))
+		return ""
+	}
+	return selected
+}
+
+func (a *App) OpenDiectoryDialog(prev string) string {
+	opt := runtime.OpenDialogOptions{
+		Title:            "ファルダ選択",
+		DefaultDirectory: filepath.Dir(prev),
+	}
+	selected, err := runtime.OpenDirectoryDialog(a.ctx, opt)
+	if err != nil {
+		runtime.LogError(a.ctx, fmt.Sprintf("OpenDiectoryDialog:ERR %v", err.Error()))
+		return ""
+	}
+	return selected
 }
 
 func (a *App) OnKeepAliveCallback() {

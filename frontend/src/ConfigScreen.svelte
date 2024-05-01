@@ -3,7 +3,7 @@
   import Paper, { Title, Content } from "@smui/paper";
   import { LogPrint } from "../wailsjs/runtime/runtime";
   import BoolConfig from "./BoolConfig.svelte";
-  import StaticTextConfig from "./StaticTextConfig.svelte";
+  import DialogConfig from "./DialogConfig.svelte";
   import TextConfig from "./TextConfig.svelte";
   import { onMount } from "svelte";
   export let Config;
@@ -29,6 +29,9 @@
   function onTextConfigChanged(event, type) {
     //LogPrint(`Notify fired! Detail: ${event.detail.value}`);
     switch (type) {
+      case "logdest":
+        Config.LogDest = event.detail.value;
+        break;
       case "obsip":
         Config.ObsIp = event.detail.value;
         break;
@@ -73,6 +76,15 @@
 </script>
 
 <h1>設定画面</h1>
+<Paper>
+  <DialogConfig
+    type="dir"
+    value={Config.LogDest}
+    labelText="ログ出力フォルダ"
+    on:changed={(e) => onTextConfigChanged(e, "logdest")}
+  ></DialogConfig>
+</Paper>
+
 <Paper>
   <Content>オーバーレイ設定</Content>
   <BoolConfig
@@ -133,10 +145,11 @@
 </Paper>
 
 <Paper>
-  <StaticTextConfig
+  <DialogConfig
+    type="file"
     value={Config.NotifySoundFile}
     labelText="新規クリップ通知音"
-    selectionFilter="audio/mp3, audio/wav"
+    selectionFilter="*.mp3; *.wav"
     on:changed={(e) => onTextConfigChanged(e, "clipsound")}
-  ></StaticTextConfig>
+  ></DialogConfig>
 </Paper>
