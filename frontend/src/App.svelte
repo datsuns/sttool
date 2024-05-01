@@ -22,12 +22,15 @@
   let Clips = [];
   let ServerPort = 0;
   let Config;
-  let debugMode = false;
+  let Debug = false;
 
   onMount(() => {
     GetServerPort().then((result) => (ServerPort = result));
-    LoadConfig().then((result) => (Config = result));
-    debugMode = Config.DebugMode;
+    LoadConfig().then((result) => {
+      Config = result;
+      Debug = Config.DebugMode;
+      LogPrint(`App:onMount debug : ${Debug}`);
+    });
   });
 
   function toggleDrawer() {
@@ -94,7 +97,11 @@
 
   <div class="content">
     {#if $currentScreen === "main"}
-      <MainScreen bind:this={mainScreenRef} raidUserClips={Clips} {debugMode} />
+      <MainScreen
+        bind:this={mainScreenRef}
+        raidUserClips={Clips}
+        debugMode={Debug}
+      />
     {:else if $currentScreen === "settings"}
       <ConfigScreen {Config} on:changed={onConfigChanged} />
     {/if}

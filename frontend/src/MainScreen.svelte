@@ -1,4 +1,6 @@
 <script>
+    import { writable } from "svelte/store";
+    import { onMount } from "svelte";
     import LayoutGrid, { Cell } from "@smui/layout-grid";
     import Paper, { Title } from "@smui/paper";
     import {
@@ -7,15 +9,20 @@
         StopClip,
         DebugRaidTest,
     } from "../wailsjs/go/main/App.js";
-
     import { LogPrint, EventsOn } from "../wailsjs/runtime/runtime";
-
     import Clip from "./Clip.svelte";
 
     export let raidUserClips = [];
     export let debugMode = false;
 
+    let Debug = writable(false);
     let dbg_RaidUser = "";
+
+    onMount(() => {
+        if (debugMode) {
+            Debug.set(true);
+        }
+    });
 
     function openLink(url) {
         OpenURL(url).then((result) => LogPrint("open link"));
@@ -42,7 +49,7 @@
     }
 </script>
 
-{#if debugMode}
+{#if $Debug}
     <input
         bind:value={dbg_RaidUser}
         class="input"

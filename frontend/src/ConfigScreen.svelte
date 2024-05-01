@@ -89,9 +89,12 @@
     ></TextConfig>
   </Paper>
 </Paper>
-<StaticTextConfig
-  value={Config.NotifySoundFile}
-  labelText="新規クリップ通知音"
-  selectionFilter="audio/mp3, audio/wav"
-  on:changed={onClipNotificationChanged}
-></StaticTextConfig>
+
+<Paper>
+  <StaticTextConfig
+    value={Config.NotifySoundFile}
+    labelText="新規クリップ通知音"
+    selectionFilter="audio/mp3, audio/wav"
+    on:changed={onClipNotificationChanged}
+  ></StaticTextConfig>
+</Paper>
