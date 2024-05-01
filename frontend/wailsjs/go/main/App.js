@@ -10,10 +10,6 @@ export function DebugRaidTest(arg1) {
   return window['go']['main']['App']['DebugRaidTest'](arg1);
 }
 
-export function GetServerPort() {
-  return window['go']['main']['App']['GetServerPort']();
-}
-
 export function LoadConfig() {
   return window['go']['main']['App']['LoadConfig']();
 }

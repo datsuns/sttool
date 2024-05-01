@@ -52,10 +52,6 @@ func (a *App) SaveConfig(appCfg *AppConfig) {
 	a.Backend.SaveConfig(&appCfg.ConfigBody)
 }
 
-func (a *App) GetServerPort() int {
-	return a.Backend.GetOverlayPortNumber()
-}
-
 func (a *App) OpenURL(url string) {
 	if err := browser.OpenURL(url); err != nil {
 		runtime.LogDebug(a.ctx, fmt.Sprintf("URL[%v] open error: %v", url, err))

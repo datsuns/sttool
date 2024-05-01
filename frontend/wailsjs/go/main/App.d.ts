@@ -7,8 +7,6 @@ export function DebugAppendEntry():Promise<void>;
 
 export function DebugRaidTest(arg1:string):Promise<void>;
 
-export function GetServerPort():Promise<number>;
-
 export function LoadConfig():Promise<main.AppConfig>;
 
 export function OnConnectedCallback():Promise<void>;

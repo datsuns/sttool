@@ -5,11 +5,7 @@
   import TopAppBar from "@smui/top-app-bar";
   import IconButton, { Icon } from "@smui/icon-button";
   import List, { Item } from "@smui/list";
-  import {
-    GetServerPort,
-    LoadConfig,
-    SaveConfig,
-  } from "../wailsjs/go/main/App.js";
+  import { LoadConfig, SaveConfig } from "../wailsjs/go/main/App.js";
   import { LogPrint, EventsOn } from "../wailsjs/runtime/runtime";
   import MainScreen from "./MainScreen.svelte";
   import ConfigScreen from "./ConfigScreen.svelte";
@@ -20,12 +16,10 @@
   let mainScreenRef;
 
   let Clips = [];
-  let ServerPort = 0;
   let Config;
   let Debug = false;
 
   onMount(() => {
-    GetServerPort().then((result) => (ServerPort = result));
     LoadConfig().then((result) => {
       Config = result;
       Debug = Config.DebugMode;
