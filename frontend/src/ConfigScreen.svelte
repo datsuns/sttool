@@ -25,11 +25,7 @@
     Config.OverlayEnabled = event.detail.checked;
     issueDispatch(Config);
   }
-  function onClipNotificationChanged(event) {
-    Config.NotifySoundFile = event.detail.value;
-    //LogPrint(`Notify fired! Detail: ${event.detail.value}`);
-    issueDispatch(Config);
-  }
+
   function onTextConfigChanged(event, type) {
     //LogPrint(`Notify fired! Detail: ${event.detail.value}`);
     switch (type) {
@@ -38,6 +34,9 @@
         break;
       case "obspass":
         Config.ObsPass = event.detail.value;
+        break;
+      case "clipsound":
+        Config.NotifySoundFile = event.detail.value;
         break;
       default:
         LogPrint(`onTextConfigChanged: invalid type: ${type}`);
@@ -138,6 +137,6 @@
     value={Config.NotifySoundFile}
     labelText="新規クリップ通知音"
     selectionFilter="audio/mp3, audio/wav"
-    on:changed={onClipNotificationChanged}
+    on:changed={(e) => onTextConfigChanged(e, "clipsound")}
   ></StaticTextConfig>
 </Paper>
