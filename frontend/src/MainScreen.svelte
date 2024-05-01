@@ -12,8 +12,8 @@
 
     import Clip from "./Clip.svelte";
 
-    export let overlayServerPort;
     export let raidUserClips = [];
+    export let debugMode = false;
 
     let dbg_RaidUser = "";
 
@@ -34,7 +34,7 @@
         LogPrint("stop Clip");
     };
 
-    export function handleOnConnected(msg, debugMode) {
+    export function handleOnConnected(msg) {
         LogPrint(`MainScreen:handleOnConnected ${msg}`);
         if (debugMode) {
             DebugRaidTest("datsuns7");
@@ -42,17 +42,15 @@
     }
 </script>
 
-<input
-    bind:value={dbg_RaidUser}
-    class="input"
-    placeholder="レイドテスト用(ユーザID)"
-/>
-
-<button on:click={callDebugRaidTest}>raid test</button>
-<div class="my-overlay-url">
-    http://localhost:{overlayServerPort}
-</div>
-<button on:click={stopClipTest}>stop clip</button>
+{#if debugMode}
+    <input
+        bind:value={dbg_RaidUser}
+        class="input"
+        placeholder="レイドテスト用(ユーザID)"
+    />
+    <button on:click={callDebugRaidTest}>raid test</button>
+{/if}
+<button on:click={stopClipTest}>クリップ強制停止</button>
 {#each raidUserClips.slice().reverse() as clip}
     <h1>{clip.name} さんのクリップ</h1>
     {#if clip.body.length == 0}
@@ -82,9 +80,5 @@
 <style>
     :global(.mdc-card) {
         background-color: rgba(18, 29, 45, 1);
-    }
-
-    .my-overlay-url {
-        color: lightblue;
     }
 </style>

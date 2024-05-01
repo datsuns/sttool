@@ -22,10 +22,12 @@
   let Clips = [];
   let ServerPort = 0;
   let Config;
+  let debugMode = false;
 
   onMount(() => {
     GetServerPort().then((result) => (ServerPort = result));
     LoadConfig().then((result) => (Config = result));
+    debugMode = Config.DebugMode;
   });
 
   function toggleDrawer() {
@@ -41,7 +43,7 @@
 
   EventsOn("OnConnected", (msg) => {
     LogPrint(`App:OnConnected ${msg}`);
-    mainScreenRef.handleOnConnected(msg, Config.DebugMode);
+    mainScreenRef.handleOnConnected(msg);
   });
 
   EventsOn("OnRaid", (msg, username, items) => {
@@ -92,11 +94,7 @@
 
   <div class="content">
     {#if $currentScreen === "main"}
-      <MainScreen
-        bind:this={mainScreenRef}
-        overlayServerPort={ServerPort}
-        raidUserClips={Clips}
-      />
+      <MainScreen bind:this={mainScreenRef} raidUserClips={Clips} {debugMode} />
     {:else if $currentScreen === "settings"}
       <ConfigScreen {Config} on:changed={onConfigChanged} />
     {/if}

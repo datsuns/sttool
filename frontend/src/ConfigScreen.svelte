@@ -30,53 +30,68 @@
     //LogPrint(`Notify fired! Detail: ${event.detail.value}`);
     issueDispatch(Config);
   }
-  function onClipWidthChanged(event) {
+  function onNumberConfigChanged(event, type) {
     LogPrint(`Notify fired! Detail: ${event.detail.value}`);
     let v = Number(event.detail.value);
     if (isNaN(v)) {
       LogPrint(`invalid number text: ${event.detail.value}`);
       return;
     }
-    Config.ClipPlayerWidth = v;
-    issueDispatch(Config);
-  }
-  function onClipHeightChanged(event) {
-    LogPrint(`Notify fired! Detail: ${event.detail.value}`);
-    let v = Number(event.detail.value);
-    if (isNaN(v)) {
-      LogPrint(`invalid number text: ${event.detail.value}`);
-      return;
+    switch (type) {
+      case "width":
+        Config.ClipPlayerWidth = v;
+        break;
+      case "height":
+        Config.ClipPlayerHeight = v;
+        break;
+      case "port":
+        Config.LocalServerPortNumber = v;
+        break;
+      default:
+        LogPrint(`invalid type: ${type}`);
+        return;
     }
-    Config.ClipPlayerHeight = v;
     issueDispatch(Config);
   }
 </script>
 
 <h1>設定画面</h1>
-<BoolConfig
-  value={Config.OverlayEnabled}
-  labelText="オーバーレイ有効"
-  on:changed={onOverlayConfigChanged}
-></BoolConfig>
+<Paper>
+  <Content>オーバーレイ設定</Content>
+  <BoolConfig
+    value={Config.OverlayEnabled}
+    labelText="オーバーレイ有効"
+    on:changed={onOverlayConfigChanged}
+  ></BoolConfig>
+  <Paper square variant="outlined">
+    <Content>URL</Content>
+    <Title>http://localhost:{Config.LocalServerPortNumber}</Title>
+    <TextConfig
+      value={Config.LocalServerPortNumber}
+      labelText="port番号"
+      valueType="number"
+      on:changed={(e) => onNumberConfigChanged(e, "port")}
+    ></TextConfig>
+  </Paper>
+  <Paper square variant="outlined">
+    <Title>クリップ再生サイズ</Title>
+    <TextConfig
+      value={Config.ClipPlayerWidth}
+      labelText="幅"
+      valueType="number"
+      on:changed={(e) => onNumberConfigChanged(e, "width")}
+    ></TextConfig>
+    <TextConfig
+      value={Config.ClipPlayerHeight}
+      labelText="高さ"
+      valueType="number"
+      on:changed={(e) => onNumberConfigChanged(e, "height")}
+    ></TextConfig>
+  </Paper>
+</Paper>
 <StaticTextConfig
   value={Config.NotifySoundFile}
   labelText="新規クリップ通知音"
   selectionFilter="audio/mp3, audio/wav"
   on:changed={onClipNotificationChanged}
 ></StaticTextConfig>
-
-<Paper square variant="outlined">
-  <Title>オーバーレイクリップサイズ</Title>
-  <TextConfig
-    value={Config.ClipPlayerWidth}
-    labelText="幅"
-    valueType="number"
-    on:changed={onClipWidthChanged}
-  ></TextConfig>
-  <TextConfig
-    value={Config.ClipPlayerHeight}
-    labelText="高さ"
-    valueType="number"
-    on:changed={onClipHeightChanged}
-  ></TextConfig>
-</Paper>
