@@ -291,6 +291,8 @@ func (c *BackendContext) NeedReload(newCfg *ConfigBody) bool {
 		return true
 	} else if c.Config.OverlayEnabled() != newCfg.OverlayEnabled {
 		return true
+	} else if c.Config.LocalPortNum() != newCfg.LocalServerPortNumber {
+		return true
 	}
 	return false
 }
@@ -298,6 +300,9 @@ func (c *BackendContext) NeedReload(newCfg *ConfigBody) bool {
 func (c *BackendContext) Reload() error {
 	path := buildLogPath(c.Config)
 	logger, statsLogger = buildLogger(c.Config, path)
+
+	c.Overlay.Shutdown()
+	c.Overlay.Serve(c.Config)
 	return nil
 }
 

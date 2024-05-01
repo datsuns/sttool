@@ -1,17 +1,20 @@
 package backend
 
 import (
+	"context"
 	"fmt"
 	"log/slog"
 	"net/http"
+	"time"
 )
 
 type OverlayContext struct {
 	ChannStartClip   chan struct{}
 	ChannStopClip    chan struct{}
-	ServerPort       int
 	PlayMarginSecond int
 	ClipUrl          string
+	ServeMux         *http.ServeMux
+	Server           *http.Server
 }
 
 const OverlayHtml = `
@@ -55,7 +58,6 @@ func NewOverlay(cfg *Config) *OverlayContext {
 	ret := &OverlayContext{
 		ChannStartClip: make(chan struct{}),
 		ChannStopClip:  make(chan struct{}),
-		ServerPort:     cfg.LocalPortNum(),
 	}
 	return ret
 }
@@ -120,17 +122,18 @@ func (o *OverlayContext) OnEvent(w http.ResponseWriter, r *http.Request, cfg *Co
 
 func (o *OverlayContext) Main(cfg *Config) {
 	logger.Info("Ovelay:Start")
-	http.HandleFunc("/events", func(w http.ResponseWriter, r *http.Request) {
+	o.ServeMux = http.NewServeMux()
+	o.ServeMux.HandleFunc("/events", func(w http.ResponseWriter, r *http.Request) {
 		o.OnEvent(w, r, cfg)
 	})
-	http.HandleFunc("/", rootDocument)
+	o.ServeMux.HandleFunc("/", rootDocument)
+	o.Server = &http.Server{
+		Addr:    fmt.Sprintf(":%v", cfg.LocalPortNum()),
+		Handler: o.ServeMux,
+	}
 
-	if err := http.ListenAndServe(
-		fmt.Sprintf(":%v", cfg.LocalPortNum()),
-		nil,
-	); err != nil {
+	if err := o.Server.ListenAndServe(); err != nil {
 		logger.Error("Ovelay:ERROR", slog.Any("error", err.Error))
-
 	}
 	logger.Info("Ovelay:Finish")
 }
@@ -139,4 +142,11 @@ func (o *OverlayContext) Serve(cfg *Config) {
 	go func() {
 		o.Main(cfg)
 	}()
+}
+
+func (o *OverlayContext) Shutdown() {
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	o.Server.Shutdown(ctx)
+	<-ctx.Done()
 }
