@@ -53,3 +53,7 @@ export function StopClip() {
 export function StopObsStream() {
   return window['go']['main']['App']['StopObsStream']();
 }
+
+export function TestObsConnection() {
+  return window['go']['main']['App']['TestObsConnection']();
+}

@@ -60,6 +60,15 @@ func (a *App) OpenURL(url string) {
 	}
 }
 
+func (a *App) TestObsConnection() string {
+	ret, err := a.Backend.TestObsConnection()
+	if err != nil {
+		runtime.LogError(a.ctx, fmt.Sprintf("TestObsConnection error: %v", err))
+		return ""
+	}
+	return ret
+}
+
 func (a *App) StopObsStream() {
 	a.Backend.StopObsStream()
 }

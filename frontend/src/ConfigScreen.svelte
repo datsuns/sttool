@@ -1,12 +1,19 @@
 <script>
   import { createEventDispatcher } from "svelte";
   import Paper, { Title, Content } from "@smui/paper";
+  import Button, { Label } from "@smui/button";
+  import Snackbar, { Actions } from "@smui/snackbar";
+  import IconButton from "@smui/icon-button";
   import { LogPrint } from "../wailsjs/runtime/runtime";
   import BoolConfig from "./BoolConfig.svelte";
   import DialogConfig from "./DialogConfig.svelte";
   import TextConfig from "./TextConfig.svelte";
   import { onMount } from "svelte";
+  import { TestObsConnection } from "../wailsjs/go/main/App.js";
+
   export let Config;
+  let showObsConnectionResult;
+  let ObsConnectionResultBody = "";
 
   const dispatch = createEventDispatcher();
 
@@ -14,6 +21,18 @@
     //LogPrint(`config: ${Config.NotifySoundFile}`);
     //LogPrint(`config: ${Config.OverlayEnabled}`);
   });
+
+  function testObsConnection() {
+    TestObsConnection().then((result) => {
+      LogPrint(`testObsConnection [${result}]`);
+      if (result.length > 0) {
+        ObsConnectionResultBody = `接続OK OBSバージョン[${result}]`;
+      } else {
+        ObsConnectionResultBody = "接続エラー";
+      }
+      showObsConnectionResult.open();
+    });
+  }
 
   function issueDispatch(cfg) {
     dispatch("changed", {
@@ -141,6 +160,15 @@
       valueType="password"
       on:changed={(e) => onTextConfigChanged(e, "obspass")}
     ></TextConfig>
+    <Button color="secondary" on:click={testObsConnection} variant="raised">
+      <Label>接続テスト</Label>
+    </Button>
+    <Snackbar bind:this={showObsConnectionResult}>
+      <Label>{ObsConnectionResultBody}</Label>
+      <Actions>
+        <IconButton class="material-icons" title="Dismiss">close</IconButton>
+      </Actions>
+    </Snackbar>
   </Paper>
 </Paper>
 

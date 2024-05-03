@@ -323,6 +323,14 @@ func (c *BackendContext) SaveConfig(cfg *ConfigBody) {
 	}
 }
 
+func (c *BackendContext) TestObsConnection() (string, error) {
+	ver, err := GetObsVersion(c.Config)
+	if err != nil {
+		return "", err
+	}
+	return ver, nil
+}
+
 func (c *BackendContext) StopObsStream() {
 	StopObsStream(c.Config)
 }
