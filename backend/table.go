@@ -360,11 +360,13 @@ func handleNotificationRaidStarted(_ *BackendContext, cfg *Config, r *Responce, 
 	statsLogger.Info("event(Raid Started)",
 		slog.Any(LogFieldName_Type, r.Payload.Subscription.Type),
 	)
-	go func() {
-		logger.Info("StopStream Start")
-		ticker := time.NewTicker(time.Second * time.Duration(cfg.DelayFromRaidToStop()))
-		<-ticker.C
-		StopObsStream(cfg)
-		logger.Info("StopStream End")
-	}()
+	if cfg.StopStreamAfterRaided() {
+		go func() {
+			logger.Info("StopStream Start")
+			ticker := time.NewTicker(time.Second * time.Duration(cfg.DelayFromRaidToStop()))
+			<-ticker.C
+			StopObsStream(cfg)
+			logger.Info("StopStream End")
+		}()
+	}
 }

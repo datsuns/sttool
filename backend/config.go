@@ -16,6 +16,7 @@ type ConfigBody struct {
 	ObsIp                      string   `yaml:"OBS_IP"`
 	ObsPort                    int      `yaml:"OBS_PORT"`
 	ObsPass                    string   `yaml:"OBS_PASS"`
+	StopStreamAfterRaided      bool     `yaml:"STOP_STREAM_AFTER_RAID"`
 	DelaySecondsFromRaidToStop int      `yaml:"DELAY_TO_STOP"`
 	NewClipWatchIntervalSecond int      `yaml:"NEW_CLIP_INTERVAL"`
 	LocalServerPortNumber      int      `yaml:"SERVER_PORT"`
@@ -48,6 +49,7 @@ var (
 		LocalTest:                  false,
 		LogDest:                    ".",
 		ObsPass:                    "",
+		StopStreamAfterRaided:      true,
 		DelaySecondsFromRaidToStop: 180,
 		NewClipWatchIntervalSecond: 128,
 		LocalServerPortNumber:      8930,
@@ -223,6 +225,10 @@ func (c *Config) LocalPortNum() int {
 
 func (c *Config) LogPath() string {
 	return c.Body.LogDest
+}
+
+func (c *Config) StopStreamAfterRaided() bool {
+	return c.Body.StopStreamAfterRaided
 }
 
 func (c *Config) DelayFromRaidToStop() int {
