@@ -149,12 +149,14 @@
   <Content>OBS連携</Content>
   <Paper square variant="outlined">
     <Content>websocketサーバー</Content>
+    <!---
     <TextConfig
       value={Config.ObsIp}
       labelText="サーバーIP"
       valueType="text"
       on:changed={(e) => onTextConfigChanged(e, "obsip")}
     ></TextConfig>
+    --->
     <TextConfig
       value={Config.ObsPort}
       labelText="サーバーポート"

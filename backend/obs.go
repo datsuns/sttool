@@ -7,8 +7,10 @@ import (
 	"github.com/andreykaipov/goobs"
 )
 
+// OBS may use IPv6 address. I dont know how to use IPv6 for goobs library
 func buildObsUrl(cfg *Config) string {
-	return fmt.Sprintf("%v:%v", cfg.ObsIp(), cfg.ObsPort())
+	//return fmt.Sprintf("%v:%v", cfg.ObsIp(), cfg.ObsPort())
+	return fmt.Sprintf("localhost:%v", cfg.ObsPort())
 }
 
 func connectToObs(cfg *Config) (*goobs.Client, error) {
