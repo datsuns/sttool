@@ -40,8 +40,15 @@
     });
   }
 
-  function onOverlayConfigChanged(event) {
-    Config.OverlayEnabled = event.detail.checked;
+  function onBoolConfigChanged(event, type) {
+    switch (type) {
+      case "overlayen":
+        Config.OverlayEnabled = event.detail.checked;
+        break;
+      default:
+        LogPrint(`onBoolConfigChanged: invalid type: ${type}`);
+        return;
+    }
     issueDispatch(Config);
   }
 
@@ -109,7 +116,7 @@
   <BoolConfig
     value={Config.OverlayEnabled}
     labelText="オーバーレイ有効"
-    on:changed={onOverlayConfigChanged}
+    on:changed={(e) => onBoolConfigChanged(e, "overlayen")}
   ></BoolConfig>
   <Paper square variant="outlined">
     <Content>URL</Content>
