@@ -45,6 +45,9 @@
       case "overlayen":
         Config.OverlayEnabled = event.detail.checked;
         break;
+      case "stopstream":
+        Config.StopStreamAfterRaided = event.detail.checked;
+        break;
       default:
         LogPrint(`onBoolConfigChanged: invalid type: ${type}`);
         return;
@@ -93,6 +96,9 @@
       case "obsport":
         Config.ObsPort = v;
         break;
+      case "stopdelay":
+        Config.DelaySecondsFromRaidToStop = v;
+        break;
       default:
         LogPrint(`onNumberConfigChanged invalid type: ${type}`);
         return;
@@ -113,11 +119,13 @@
 
 <Paper>
   <Title>オーバーレイ設定</Title>
-  <BoolConfig
-    value={Config.OverlayEnabled}
-    labelText="オーバーレイ有効"
-    on:changed={(e) => onBoolConfigChanged(e, "overlayen")}
-  ></BoolConfig>
+  <Paper square variant="outlined">
+    <BoolConfig
+      value={Config.OverlayEnabled}
+      labelText="オーバーレイ有効"
+      on:changed={(e) => onBoolConfigChanged(e, "overlayen")}
+    ></BoolConfig>
+  </Paper>
   <Paper square variant="outlined">
     <Content>URL</Content>
     <Content>http://localhost:{Config.LocalServerPortNumber}</Content>
@@ -178,6 +186,22 @@
         <IconButton class="material-icons" title="Dismiss">close</IconButton>
       </Actions>
     </Snackbar>
+  </Paper>
+  <Paper square variant="outlined">
+    <Paper square variant="outlined">
+      <BoolConfig
+        value={Config.StopStreamAfterRaided}
+        labelText="Raid後に配信を停止する"
+        on:changed={(e) => onBoolConfigChanged(e, "stopstream")}
+      ></BoolConfig>
+      <br />
+      <TextConfig
+        value={Config.DelaySecondsFromRaidToStop}
+        labelText="猶予時間(秒)"
+        valueType="number"
+        on:changed={(e) => onNumberConfigChanged(e, "stopdelay")}
+      ></TextConfig>
+    </Paper>
   </Paper>
 </Paper>
 
