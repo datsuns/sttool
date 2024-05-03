@@ -138,7 +138,7 @@
     <TextConfig
       value={Config.ObsPass}
       labelText="サーバーパスワード"
-      valueType="text"
+      valueType="password"
       on:changed={(e) => onTextConfigChanged(e, "obspass")}
     ></TextConfig>
   </Paper>
