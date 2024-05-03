@@ -362,7 +362,7 @@ func handleNotificationRaidStarted(_ *BackendContext, cfg *Config, r *Responce, 
 	)
 	go func() {
 		logger.Info("StopStream Start")
-		ticker := time.NewTicker(time.Minute * time.Duration(cfg.DelayFromRaidToStop()))
+		ticker := time.NewTicker(time.Second * time.Duration(cfg.DelayFromRaidToStop()))
 		<-ticker.C
 		StopObsStream(cfg)
 		logger.Info("StopStream End")

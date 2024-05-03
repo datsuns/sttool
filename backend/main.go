@@ -189,7 +189,9 @@ func (c *BackendContext) Progress(finishChan *chan ExitStatus, firstTime bool, c
 			*finishChan <- ConnectionCanceled
 			return
 		}
-		logger.Info("recv", slog.Any("Type", r.Metadata.MessageType))
+		if c.Config.IsDebug() {
+			logger.Info("recv", slog.Any("Type", r.Metadata.MessageType))
+		}
 		switch r.Metadata.MessageType {
 		case "session_welcome":
 			logger.Info("progress", slog.Any("event", "connected"))

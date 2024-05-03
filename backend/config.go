@@ -16,7 +16,7 @@ type ConfigBody struct {
 	ObsIp                      string   `yaml:"OBS_IP"`
 	ObsPort                    int      `yaml:"OBS_PORT"`
 	ObsPass                    string   `yaml:"OBS_PASS"`
-	DelayMinutesFromRaidToStop int      `yaml:"DELAY_TO_STOP"`
+	DelaySecondsFromRaidToStop int      `yaml:"DELAY_TO_STOP"`
 	NewClipWatchIntervalSecond int      `yaml:"NEW_CLIP_INTERVAL"`
 	LocalServerPortNumber      int      `yaml:"SERVER_PORT"`
 	OverlayEnabled             bool     `yaml:"OVERLAY_ENABLE"`
@@ -48,7 +48,7 @@ var (
 		LocalTest:                  false,
 		LogDest:                    ".",
 		ObsPass:                    "",
-		DelayMinutesFromRaidToStop: 3,
+		DelaySecondsFromRaidToStop: 180,
 		NewClipWatchIntervalSecond: 128,
 		LocalServerPortNumber:      8930,
 		OverlayEnabled:             true,
@@ -226,7 +226,7 @@ func (c *Config) LogPath() string {
 }
 
 func (c *Config) DelayFromRaidToStop() int {
-	return c.Body.DelayMinutesFromRaidToStop
+	return c.Body.DelaySecondsFromRaidToStop
 }
 
 func (c *Config) OverlayEnabled() bool {
