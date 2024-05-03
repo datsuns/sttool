@@ -105,7 +105,7 @@
 </Paper>
 
 <Paper>
-  <Content>オーバーレイ設定</Content>
+  <Title>オーバーレイ設定</Title>
   <BoolConfig
     value={Config.OverlayEnabled}
     labelText="オーバーレイ有効"
@@ -113,7 +113,7 @@
   ></BoolConfig>
   <Paper square variant="outlined">
     <Content>URL</Content>
-    <Title>http://localhost:{Config.LocalServerPortNumber}</Title>
+    <Content>http://localhost:{Config.LocalServerPortNumber}</Content>
     <TextConfig
       value={Config.LocalServerPortNumber}
       labelText="port番号"
@@ -122,7 +122,7 @@
     ></TextConfig>
   </Paper>
   <Paper square variant="outlined">
-    <Title>クリップ再生サイズ</Title>
+    <Content>クリップ再生サイズ</Content>
     <TextConfig
       value={Config.ClipPlayerWidth}
       labelText="幅"

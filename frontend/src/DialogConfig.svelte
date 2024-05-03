@@ -51,8 +51,8 @@
 <link rel="stylesheet" href="/src/style.css" />
 
 <Paper square variant="outlined">
-    <Content>{labelText}</Content>
-    <Title>{value}</Title>
+    <Title>{labelText}</Title>
+    <Content>{value}</Content>
     <Button color="secondary" on:click={handleClick(type)} variant="raised">
         <Label>変更</Label>
     </Button>

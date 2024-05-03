@@ -19,6 +19,7 @@
 </script>
 
 <link rel="stylesheet" href="/src/style.css" />
+
 <Paper square variant="outlined">
     <FormField>
         <Checkbox bind:checked={value} on:change={handleChanged} />
