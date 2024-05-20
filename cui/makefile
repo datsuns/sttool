@@ -1,16 +1,20 @@
-BIN := twichevent.exe
+BIN_Main := twich_event_cmdline.exe
+BIN_Cmd  := twitch_command.exe
 
 default: build
 
-build: $(BIN)
+build: $(BIN_Main) $(BIN_Cmd)
 
-$(BIN): ../backend/*.go
-	go build -o $@
+$(BIN_Main): ../backend/*.go cui.go
+	go build -o $@ cui.go
 
-run: $(BIN)
-	./$(BIN)
+$(BIN_Cmd): ../backend/*.go cmd.go
+	go build -o $@ cmd.go
 
-release: $(BIN)
-	cp ./$(BIN) ../../../../test/
+run: $(BIN_Main)
+	./$(BIN_Main)
+
+release: $(BIN_Main) $(BIN_Cmd)
+	cp $^ ../../../test/
 
 .PHONY: default build release
