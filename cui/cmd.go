@@ -22,7 +22,7 @@ func main() {
 	}
 	b := backend.NewBackend(callback)
 	backend.ConfirmAccessToken(b.Config)
-	ret := b.ListChannelPoints()
+	ret := b.ListChannelRewards()
 	for _, p := range ret {
 		fmt.Printf("title[%v] id[%v] enable[%v] paused[%v]\n", p.Title, p.Id, p.Enabled, p.Paused)
 	}

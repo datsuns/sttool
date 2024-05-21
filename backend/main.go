@@ -345,11 +345,11 @@ func (c *BackendContext) StopObsStream() {
 	StopObsStream(c.Config)
 }
 
-func (c *BackendContext) ListChannelPoints() []ChannelPoint {
+func (c *BackendContext) ListChannelRewards() []ChannelPoint {
 	ret := []ChannelPoint{}
 	raw, e := ReferUserChannelRewards(c.Config, c.Config.TargetUserId)
 	if e != nil {
-		logger.Error("ListChannelPoints", slog.Any("ERR", e.Error()))
+		logger.Error("ListChannelRewards", slog.Any("ERR", e.Error()))
 	}
 	for _, r := range raw.Data {
 		ret = append(ret, ChannelPoint{Id: r.Id,
