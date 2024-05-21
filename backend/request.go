@@ -247,7 +247,7 @@ func ReferUserChannelPoints(cfg *Config, userId string) (*GetCustomRewardResponc
 		logger.Error("issueEventSubRequest::http.NewRequest", slog.Any("ERR", err.Error()))
 		return nil, err
 	}
-	logger.Info("rest auth", slog.Any("Auth", cfg.AuthCode()), slog.Any("ClientID", cfg.ClientId()))
+	//logger.Info("rest auth", slog.Any("Auth", cfg.AuthCode()), slog.Any("ClientID", cfg.ClientId()))
 	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", cfg.AuthCode()))
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("Client-Id", cfg.ClientId())
