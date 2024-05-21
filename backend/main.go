@@ -24,6 +24,14 @@ type UserClip struct {
 	Mp4       string
 }
 
+type ChannelPoint struct {
+	Id      string
+	Title   string
+	Cost    int
+	Enabled bool
+	Paused  bool
+}
+
 type RaidCallbackParam struct {
 	From  UserName
 	Clips []UserClip
@@ -335,4 +343,21 @@ func (c *BackendContext) TestObsConnection() (string, error) {
 
 func (c *BackendContext) StopObsStream() {
 	StopObsStream(c.Config)
+}
+
+func (c *BackendContext) ListChannelPoints() []ChannelPoint {
+	ret := []ChannelPoint{}
+	raw, e := ReferUserChannelPoints(c.Config, c.Config.TargetUserId)
+	if e != nil {
+		logger.Error("ListChannelPoints", slog.Any("ERR", e.Error()))
+	}
+	for _, r := range raw.Data {
+		ret = append(ret, ChannelPoint{Id: r.Id,
+			Title:   r.Title,
+			Cost:    r.Cost,
+			Enabled: r.IsEnabled,
+			Paused:  r.IsPaused,
+		})
+	}
+	return ret
 }

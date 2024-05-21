@@ -239,3 +239,29 @@ func referUserClipsByDate(cfg *Config, userId string, featured bool, date *time.
 	}
 	return issueGetClipRequest(cfg, url)
 }
+
+func ReferUserChannelPoints(cfg *Config, userId string) (*GetCustomRewardResponce, error) {
+	url := fmt.Sprintf("https://api.twitch.tv/helix/channel_points/custom_rewards?broadcaster_id=%v", userId)
+	req, err := http.NewRequest("GET", url, nil)
+	if err != nil {
+		logger.Error("issueEventSubRequest::http.NewRequest", slog.Any("ERR", err.Error()))
+		return nil, err
+	}
+	logger.Info("rest auth", slog.Any("Auth", cfg.AuthCode()), slog.Any("ClientID", cfg.ClientId()))
+	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", cfg.AuthCode()))
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Client-Id", cfg.ClientId())
+
+	raw, _, err := issueRequest(req, cfg.IsDebug())
+	if err != nil {
+		return nil, err
+	}
+
+	r := &GetCustomRewardResponce{}
+	err = json.Unmarshal(raw, &r)
+	if err != nil {
+		logger.Error("json.Unmarshal", slog.Any("ERR", err.Error()))
+		return nil, nil
+	}
+	return r, nil
+}

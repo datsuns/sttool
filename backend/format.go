@@ -110,6 +110,48 @@ type GetClipsApiResponce struct {
 	} `json:"data"`
 }
 
+type GetCustomRewardResponce struct {
+	Data []struct {
+		BroadcasterId    string `json:"broadcaster_id"`
+		Broadcasterlogin string `json:"broadcaster_login"`
+		BroadcasterName  string `json:"broadcaster_name"`
+		Id               string `json:"id"`
+		Title            string `json:"title"`
+		Prompt           string `json:"prompt"`
+		Cost             int    `json:"cost"`
+		Image            struct {
+			Url1x string `json:"url_1x"`
+			Url2x string `json:"url_2x"`
+			Url4x string `json:"url_4x"`
+		} `json:"image"`
+		DefaultImage struct {
+			Url1x string `json:"url_1x"`
+			Url2x string `json:"url_2x"`
+			Url4x string `json:"url_4x"`
+		} `json:"default_image"`
+		BackgroundColor     string `json:"background_color"`
+		IsEnabled           bool   `json:"is_enabled"`
+		IsUserInputRequired bool   `json:"is_user_input_required"`
+		MaxPerStreamSetting struct {
+			IsEnabled    bool  `json:"is_enabled"`
+			MaxPerStream int64 `json:"max_per_stream"`
+		} `json:"max_per_stream_setting"`
+		MaxPerUserPerStreamSetting struct {
+			IsEnabled           bool  `json:"is_enabled"`
+			MaxPerUserPerStream int64 `json:"max_per_user_per_stream"`
+		} `json:"max_per_user_per_stream_setting"`
+		GlobalCooldownSetting struct {
+			IsEnabled             bool  `json:"is_enabled"`
+			GlobalCooldownSeconds int64 `json:"global_cooldown_seconds"`
+		} `json:"global_cooldown_setting"`
+		IsPaused                          bool   `json:"is_paused"`
+		IsInStock                         bool   `json:"is_in_stock"`
+		ShouldRedemptionsSkipRequestQueue bool   `json:"should_redemptions_skip_request_queue"`
+		RedemptionsRedeemedCurrentStream  int    `json:"redemptions_redeemed_current_stream"`
+		CooldownExpiresAt                 string `json:"cooldown_expires_at"`
+	} `json:"data"`
+}
+
 // --- EventSub notification
 
 type MetadataFormat struct {

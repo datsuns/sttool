@@ -1,6 +1,9 @@
 package main
 
-import "sttool/backend"
+import (
+	"fmt"
+	"sttool/backend"
+)
 
 func OnKeepAliveCallback() {
 }
@@ -18,5 +21,9 @@ func main() {
 		OnConnected: OnConnectedCallback,
 	}
 	b := backend.NewBackend(callback)
-	b.Serve()
+	backend.ConfirmAccessToken(b.Config)
+	ret := b.ListChannelPoints()
+	for _, p := range ret {
+		fmt.Printf("title[%v] id[%v] enable[%v] paused[%v]\n", p.Title, p.Id, p.Enabled, p.Paused)
+	}
 }
