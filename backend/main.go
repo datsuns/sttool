@@ -347,7 +347,7 @@ func (c *BackendContext) StopObsStream() {
 
 func (c *BackendContext) ListChannelPoints() []ChannelPoint {
 	ret := []ChannelPoint{}
-	raw, e := ReferUserChannelPoints(c.Config, c.Config.TargetUserId)
+	raw, e := ReferUserChannelRewards(c.Config, c.Config.TargetUserId)
 	if e != nil {
 		logger.Error("ListChannelPoints", slog.Any("ERR", e.Error()))
 	}
