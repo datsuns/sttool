@@ -3,8 +3,12 @@ default: cui
 cui:
 	$(MAKE) -C ./cui
 
-release:
+cur_release:
 	$(MAKE) -C ./cui release
+
+release:
+	wails build
+	cp ./build/bin/sttool.exe ../twichevent.exe
 
 test:
 	go test -v ./backend
@@ -15,4 +19,4 @@ auto:
 gen:
 	AppClientID=$(AppClientID) AppClientSecret=$(AppClientSecret) go run ./tool/gen.go
 
-.PHONY: default cui release
+.PHONY: default release cui cui_release test auto gen
