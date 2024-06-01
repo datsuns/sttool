@@ -67,16 +67,7 @@ func (sl *SessionLifecycle) refresh() (int, error) {
 		logger.Error("SessionLifecycle::refresh", slog.Any("msg", "RefreshAccessToken"), slog.Any("ERR", err.Error()))
 		return 0, err
 	}
-	sl.Config.UpdatAccessToken(AuthEntry{AuthCode: a, RefreshToken: r})
-	if err := sl.Config.SaveAuth(); err != nil {
-		logger.Error("SessionLifecycle::refresh", slog.Any("msg", "SaveAuth"), slog.Any("ERR", err.Error()))
-		return 0, err
-	}
-	_, expires, _, _, err := ValidateAccessToken(sl.Config)
-	if err != nil {
-		logger.Error("SessionLifecycle::refresh", slog.Any("msg", "ValidateAccessToken"), slog.Any("ERR", err.Error()))
-		return 0, err
-	}
+	expires, err := UpdateSavedRefreshToken(sl.Config, a, r)
 	logger.Info("SessionLifecycle::refresh", slog.Any("msg", "token refreshed"), slog.Any("expired", expires))
 	if expires > MinumumExpiredSecond {
 		expires -= MinumumExpiredSecond

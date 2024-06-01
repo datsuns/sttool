@@ -51,8 +51,7 @@ func Issue1stTimeAuthentication(cfg *Config) error {
 	}
 
 	a, r, _ := RequestUserAccessToken(cfg, code, AuthRedirectUri)
-	cfg.UpdatAccessToken(AuthEntry{AuthCode: a, RefreshToken: r})
-	cfg.SaveAll()
+	UpdateSavedRefreshToken(cfg, a, r)
 	logger.Info("Issue1stTimeAuthentication", slog.Any("code", code), slog.Any("access", a), slog.Any("refresh", r))
 	statsLogger.Info("Issue1stTimeAuthentication",
 		slog.Any(LogFieldName_Type, "ResetToken"),
@@ -68,7 +67,7 @@ func ConfirmAccessToken(cfg *Config) (int, error) {
 			return 0, e
 		}
 	}
-	valid, expires, name, id, err := confirmUserAccessToken(cfg)
+	valid, expires, name, id, err := ValidateAccessToken(cfg)
 	if err != nil {
 		logger.Error("ConfirmUserAccessToken", slog.Any("ERR", err.Error()))
 		return 0, err
@@ -86,29 +85,28 @@ func ConfirmAccessToken(cfg *Config) (int, error) {
 	if err != nil {
 		return 0, err
 	}
-	cfg.UpdatAccessToken(AuthEntry{AuthCode: a, RefreshToken: r})
-	valid, expires, name, id, err = confirmUserAccessToken(cfg)
+
+	expires, err = UpdateSavedRefreshToken(cfg, a, r)
 	if err != nil {
-		logger.Error("ConfirmUserAccessToken2", slog.Any("ERR", err.Error()))
+		logger.Error("ConfirmUserAccessToken", slog.Any("ERR", err.Error()))
 		return 0, err
 	}
-	if !valid {
-		logger.Error("ConfirmUserAccessToken", slog.Any("msg", "token still invalid"))
-		return 0, fmt.Errorf("Token still invalid")
-	}
-	cfg.SaveAll()
 	cfg.TargetUserId = id
 	cfg.TargetUser = name
-	logger.Info("ConfirmUserAccessToken", slog.Any("msg", "token refreshed"), slog.Any("expired", expires))
 	return expires, nil
 }
 
-func confirmUserAccessToken(cfg *Config) (bool, int, string, string, error) {
-	valid, expires, name, id, err := ValidateAccessToken(cfg)
+func UpdateSavedRefreshToken(cfg *Config, authCode string, refreshToken string) (int, error) {
+	cfg.UpdatAccessToken(AuthEntry{AuthCode: authCode, RefreshToken: refreshToken})
+	valid, expires, _, _, err := ValidateAccessToken(cfg)
 	if err != nil {
-		logger.Error("ConfirmUserAccessToken", slog.Any("ERR", err.Error()))
-		return false, 0, "", "", err
+		logger.Error("UpdateSavedRefreshToken", slog.Any("ERR", err.Error()))
+		return 0, err
 	}
-	logger.Info("ConfirmUserAccessToken", slog.Any("valid", valid))
-	return valid, expires, name, id, nil
+	if !valid {
+		logger.Error("UpdateSavedRefreshToken", slog.Any("msg", "token still invalid"))
+		return 0, fmt.Errorf("Token still invalid")
+	}
+	cfg.SaveAll()
+	return expires, err
 }
