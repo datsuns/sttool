@@ -83,12 +83,13 @@ func ConfirmAccessToken(cfg *Config) (int, error) {
 	logger.Info("ConfirmUserAccessToken", slog.Any("msg", "start token refresh"))
 	a, r, err := RefreshAccessToken(cfg, cfg.RefreshToken())
 	if err != nil {
+		logger.Error("ConfirmUserAccessToken : RefreshAccessToken", slog.Any("ERR", err.Error()))
 		return 0, err
 	}
 
 	expires, err = UpdateSavedRefreshToken(cfg, a, r)
 	if err != nil {
-		logger.Error("ConfirmUserAccessToken", slog.Any("ERR", err.Error()))
+		logger.Error("ConfirmUserAccessToken : UpdateSavedRefreshToken", slog.Any("ERR", err.Error()))
 		return 0, err
 	}
 	cfg.TargetUserId = id

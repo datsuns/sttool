@@ -143,6 +143,7 @@ func RefreshAccessToken(cfg *Config, refreshToken string) (string, string, error
 
 	byteArray, _, err := issueRequest(req, cfg.IsDebug())
 	if err != nil {
+		logger.Error("RefreshAccessToken::issueRequest", slog.Any("ERR", err.Error()))
 		return "", "", err
 	}
 
