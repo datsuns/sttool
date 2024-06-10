@@ -92,14 +92,12 @@ func ConfirmAccessToken(cfg *Config) (int, error) {
 		logger.Error("ConfirmUserAccessToken : UpdateSavedRefreshToken", slog.Any("ERR", err.Error()))
 		return 0, err
 	}
-	cfg.TargetUserId = id
-	cfg.TargetUser = name
 	return expires, nil
 }
 
 func UpdateSavedRefreshToken(cfg *Config, authCode string, refreshToken string) (int, error) {
 	cfg.UpdatAccessToken(AuthEntry{AuthCode: authCode, RefreshToken: refreshToken})
-	valid, expires, _, _, err := ValidateAccessToken(cfg)
+	valid, expires, name, id, err := ValidateAccessToken(cfg)
 	if err != nil {
 		logger.Error("UpdateSavedRefreshToken", slog.Any("ERR", err.Error()))
 		return 0, err
@@ -108,6 +106,8 @@ func UpdateSavedRefreshToken(cfg *Config, authCode string, refreshToken string) 
 		logger.Error("UpdateSavedRefreshToken", slog.Any("msg", "token still invalid"))
 		return 0, fmt.Errorf("Token still invalid")
 	}
+	cfg.TargetUserId = id
+	cfg.TargetUser = name
 	cfg.SaveAll()
 	return expires, err
 }
