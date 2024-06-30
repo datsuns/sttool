@@ -75,6 +75,21 @@ type RaidStats struct {
 	History []RaidEntry
 }
 
+type GigantifiedEmoteHistory struct {
+	Times   int
+	History map[UserName]int
+}
+
+type MessegeEffectHistory struct {
+	Times   int
+	History map[UserName]int
+}
+
+type PowerUpStats struct {
+	GigantifiedEmoteHistory GigantifiedEmoteHistory
+	MessegeEffectHistory    MessegeEffectHistory
+}
+
 type TwitchStats struct {
 	InStreaming       bool
 	LastPeriod        PeriodStats
@@ -87,6 +102,7 @@ type TwitchStats struct {
 	ViewersHistory    []ViewerStats
 	ChannelPoinsts    ChannelPointStats
 	RaidStats         RaidStats
+	PowerUpStats      PowerUpStats
 }
 
 func NewTwitchStats() *TwitchStats {
@@ -123,6 +139,16 @@ func (t *TwitchStats) Clear() {
 	t.RaidStats = RaidStats{
 		History: []RaidEntry{},
 	}
+	t.PowerUpStats = PowerUpStats{
+		GigantifiedEmoteHistory: GigantifiedEmoteHistory{
+			Times:   0,
+			History: map[UserName]int{},
+		},
+		MessegeEffectHistory: MessegeEffectHistory{
+			Times:   0,
+			History: map[UserName]int{},
+		},
+	}
 }
 
 func (t *TwitchStats) String() string {
@@ -157,9 +183,19 @@ func (t *TwitchStats) String() string {
 	for _, e := range t.LoadRaidHistory() {
 		raidResult += fmt.Sprintf("    - %v\n", e.From)
 	}
+	gigantifiedEmoteResult := fmt.Sprintf("  巨大化スタンプ: %v回\n", t.LoadGigantifiedEmoteTimes())
+	for k, v := range t.LoadGigantifiedEmoteHistory() {
+		gigantifiedEmoteResult += fmt.Sprintf("    - %v さん : %v回\n", k, v)
+	}
+	messageEffectResult := fmt.Sprintf("  メッセージエフェクト: %v回\n", t.LoadMessageEffectTimes())
+	for k, v := range t.LoadMessageEffectHistory() {
+		messageEffectResult += fmt.Sprintf("    - %v さん : %v回\n", k, v)
+	}
 	return fmt.Sprintf(
 		"------------------------------------------------------------\n"+
 			"  配信時間: %v ~ %v\n"+
+			"%v"+
+			"%v"+
 			"%v"+
 			"%v"+
 			"%v"+
@@ -175,6 +211,8 @@ func (t *TwitchStats) String() string {
 		subGifRecvResult,
 		cheerResult,
 		raidResult,
+		gigantifiedEmoteResult,
+		messageEffectResult,
 	)
 }
 
@@ -266,6 +304,24 @@ func (t *TwitchStats) Raid(from UserName, viewers int) {
 	)
 }
 
+func (t *TwitchStats) GigantifiedEmote(from UserName) {
+	t.PowerUpStats.GigantifiedEmoteHistory.Times += 1
+	if _, exists := t.PowerUpStats.GigantifiedEmoteHistory.History[from]; exists {
+		t.PowerUpStats.GigantifiedEmoteHistory.History[from] += 1
+	} else {
+		t.PowerUpStats.GigantifiedEmoteHistory.History[from] = 1
+	}
+}
+
+func (t *TwitchStats) MessageEffect(from UserName) {
+	t.PowerUpStats.MessegeEffectHistory.Times += 1
+	if _, exists := t.PowerUpStats.MessegeEffectHistory.History[from]; exists {
+		t.PowerUpStats.MessegeEffectHistory.History[from] += 1
+	} else {
+		t.PowerUpStats.MessegeEffectHistory.History[from] = 1
+	}
+}
+
 // --- loader
 
 func (t *TwitchStats) LoadPeriod() time.Duration {
@@ -335,4 +391,20 @@ func (t *TwitchStats) LoadRaidResult() (int, int) {
 
 func (t *TwitchStats) LoadRaidHistory() []RaidEntry {
 	return t.RaidStats.History
+}
+
+func (t *TwitchStats) LoadGigantifiedEmoteTimes() int {
+	return t.PowerUpStats.GigantifiedEmoteHistory.Times
+}
+
+func (t *TwitchStats) LoadGigantifiedEmoteHistory() map[UserName]int {
+	return t.PowerUpStats.GigantifiedEmoteHistory.History
+}
+
+func (t *TwitchStats) LoadMessageEffectTimes() int {
+	return t.PowerUpStats.MessegeEffectHistory.Times
+}
+
+func (t *TwitchStats) LoadMessageEffectHistory() map[UserName]int {
+	return t.PowerUpStats.MessegeEffectHistory.History
 }

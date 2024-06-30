@@ -35,7 +35,7 @@ var (
 	}
 )
 
-func typeToLogTitle(t string) string {
+func TypeToLogTitle(t string) string {
 	if s, exists := TwitchEventTable[t]; exists {
 		return s.LogTitle + LogTextSplit
 	} else {
@@ -326,15 +326,24 @@ func handleNotificationChannelChatNotification(ctx *BackendContext, cfg *Config,
 	}
 }
 
-func handleNotificationChannelChatMessage(_ *BackendContext, _ *Config, r *Responce, raw []byte, _ *TwitchStats) {
+func handleNotificationChannelChatMessage(_ *BackendContext, _ *Config, r *Responce, raw []byte, s *TwitchStats) {
 	v := &ResponceChatMessage{}
 	err := json.Unmarshal(raw, &v)
 	if err != nil {
 		logger.Error("handleNotificationChannelChatMessage::Unmarshal", slog.Any("ERR", err.Error()), slog.Any("raw", string(raw)))
 	}
 	e := &v.Payload.Event
+	logType := r.Payload.Subscription.Type
+	switch e.MessageType {
+	case "power_ups_gigantified_emote":
+		logType = "巨大化スタンプ"
+		s.GigantifiedEmote(UserName(e.ChatterUserName))
+	case "power_ups_message_effect":
+		logType = "メッセージエフェクト"
+		s.MessageEffect(UserName(e.ChatterUserName))
+	}
 	statsLogger.Info("event(ChatMsg)",
-		slog.Any(LogFieldName_Type, r.Payload.Subscription.Type),
+		slog.Any(LogFieldName_Type, logType),
 		slog.Any(LogFieldName_UserName, e.ChatterUserName),
 		slog.Any(LogFieldName_LoginName, e.ChatterUserLogin),
 		slog.Any("text", e.Message.Text),

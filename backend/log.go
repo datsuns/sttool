@@ -66,7 +66,7 @@ func (t *TwitchInfoLogger) Handle(c context.Context, r slog.Record) error {
 	}
 	log := r.Time.Format("2006/01/02 15:04:05 ")
 	pattern := fmt.Sprintf("%v", typeField)
-	log += typeToLogTitle(pattern)
+	log += TypeToLogTitle(pattern)
 	for k, v := range fields {
 		if k == LogFieldName_Type {
 			continue
