@@ -1,4 +1,4 @@
-BIN_Main := twich_event_cmdline.exe
+BIN_Main := twitch_event_cmdline.exe
 BIN_Cmd  := twitch_command.exe
 
 default: build
