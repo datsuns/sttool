@@ -1,6 +1,7 @@
 package backend
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"log/slog"
@@ -88,6 +89,14 @@ func connect(localTest bool) (*websocket.Conn, error) {
 	return c, nil
 }
 
+func jsonToReadble(raw []byte) (string, error) {
+	var prettyJSON bytes.Buffer
+	if err := json.Indent(&prettyJSON, raw, "", "  "); err != nil {
+		return "", err
+	}
+	return prettyJSON.String(), nil
+}
+
 func receive(cfg *Config, conn *websocket.Conn) (*Responce, []byte, error) {
 	r := &Responce{}
 	_, message, err := conn.ReadMessage()
@@ -96,7 +105,8 @@ func receive(cfg *Config, conn *websocket.Conn) (*Responce, []byte, error) {
 		return nil, nil, err
 	}
 	if cfg.IsDebug() {
-		logger.Info("receive", "raw", string(message))
+		raw, _ := jsonToReadble(message)
+		logger.Info("receive raw", slog.Any("Body", raw))
 	}
 	err = json.Unmarshal(message, &r)
 	if err != nil {
