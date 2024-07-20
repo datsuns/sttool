@@ -157,39 +157,39 @@ func (t *TwitchStats) String() string {
 	finished := t.LastPeriod.Finished.Format("2006/01/02 15:04:05")
 	followResult := fmt.Sprintf("  新規フォロー: %v人\n", len(t.FollowStats.Users))
 	for _, u := range t.FollowStats.Users {
-		followResult += fmt.Sprintf("    - %v\n", u)
+		followResult += fmt.Sprintf("    - %vさん\n", u)
 	}
 	chanepoResult := fmt.Sprintf("  チャネポ総回数: %v\n", t.LoadChannelPointTotal())
 	for name, times := range t.LoadChannelPointHistory() {
-		chanepoResult += fmt.Sprintf("    - %v: %v回\n", name, times)
+		chanepoResult += fmt.Sprintf("    - %vさん: %v回\n", name, times)
 	}
 	subscResult := fmt.Sprintf("  新規サブスク: %v人\n", len(t.LoadSubScribed()))
 	for name := range t.LoadSubscriptonHistory() {
-		subscResult += fmt.Sprintf("    - %v\n", name)
+		subscResult += fmt.Sprintf("    - %vさん\n", name)
 	}
 	subGifResult := fmt.Sprintf("  総サブギフ個数: %v個\n", t.LoadSubGiftTotal())
 	for name, times := range t.LoadSubGiftHistory() {
-		subGifResult += fmt.Sprintf("    - %v (%v個)\n", name, times)
+		subGifResult += fmt.Sprintf("    - %vさん(%v個)\n", name, times)
 	}
 	subGifRecvResult := fmt.Sprintf("    >> サブギフ受け取った: %v人\n", len(t.LoadSubGifted()))
 	for name := range t.LoadSubGifted() {
-		subGifRecvResult += fmt.Sprintf("      - %v\n", name)
+		subGifRecvResult += fmt.Sprintf("      - %vさん\n", name)
 	}
 	cheerResult := fmt.Sprintf("  ビッツ: %v\n", t.LoadCheerTotal())
 	for name, bitsRecord := range t.LoadCheerHistory() {
-		cheerResult += fmt.Sprintf("    - %v (%v ビッツ)\n", name, bitsRecord.Bits)
+		cheerResult += fmt.Sprintf("    - %vさん(%v ビッツ)\n", name, bitsRecord.Bits)
 	}
 	raidResult := fmt.Sprintf("  レイド: %v回\n", raidTimes)
 	for _, e := range t.LoadRaidHistory() {
-		raidResult += fmt.Sprintf("    - %v\n", e.From)
+		raidResult += fmt.Sprintf("    - %vさん\n", e.From)
 	}
 	gigantifiedEmoteResult := fmt.Sprintf("  巨大化スタンプ: %v回\n", t.LoadGigantifiedEmoteTimes())
 	for k, v := range t.LoadGigantifiedEmoteHistory() {
-		gigantifiedEmoteResult += fmt.Sprintf("    - %v さん : %v回\n", k, v)
+		gigantifiedEmoteResult += fmt.Sprintf("    - %vさん : %v回\n", k, v)
 	}
 	messageEffectResult := fmt.Sprintf("  メッセージエフェクト: %v回\n", t.LoadMessageEffectTimes())
 	for k, v := range t.LoadMessageEffectHistory() {
-		messageEffectResult += fmt.Sprintf("    - %v さん : %v回\n", k, v)
+		messageEffectResult += fmt.Sprintf("    - %vさん : %v回\n", k, v)
 	}
 	return fmt.Sprintf(
 		"------------------------------------------------------------\n"+
