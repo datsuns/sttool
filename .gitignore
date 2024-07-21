@@ -4,5 +4,6 @@ frontend/node_modules
 _test/
 config.yaml
 レイド.txt
+配信履歴.txt
 
 .auth.yaml

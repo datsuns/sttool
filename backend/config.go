@@ -3,6 +3,7 @@ package backend
 import (
 	"io"
 	"os"
+	"path/filepath"
 
 	"gopkg.in/yaml.v3"
 )
@@ -225,6 +226,10 @@ func (c *Config) LocalPortNum() int {
 
 func (c *Config) LogPath() string {
 	return c.Body.LogDest
+}
+
+func (c *Config) StatsLogFullPath() string {
+	return filepath.Join(c.Body.LogDest, c.StatsLogPath)
 }
 
 func (c *Config) StopStreamAfterRaided() bool {

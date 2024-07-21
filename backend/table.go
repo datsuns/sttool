@@ -197,7 +197,7 @@ func handleNotificationStreamOffline(_ *BackendContext, cfg *Config, r *Responce
 		slog.Any(LogFieldName_UserName, e.BroadcasterUserName),
 	)
 	s.StreamFinished()
-	log, _ := os.OpenFile(cfg.StatsLogPath, os.O_APPEND|os.O_RDWR|os.O_CREATE, 0666)
+	log, _ := os.OpenFile(cfg.StatsLogFullPath(), os.O_APPEND|os.O_RDWR|os.O_CREATE, 0666)
 	defer log.Close()
 	log.WriteString(s.String())
 }
