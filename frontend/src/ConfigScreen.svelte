@@ -70,6 +70,12 @@
       case "clipsound":
         Config.NotifySoundFile = event.detail.value;
         break;
+      case "logtopindent":
+        Config.LogTopIndent = event.detail.value;
+        break;
+      case "lognameprefix":
+        Config.LogUserNamePrefix = event.detail.value;
+        break;
       default:
         LogPrint(`onTextConfigChanged: invalid type: ${type}`);
         return;
@@ -115,6 +121,21 @@
     labelText="ログ出力フォルダ"
     on:changed={(e) => onTextConfigChanged(e, "logdest")}
   ></DialogConfig>
+  <Paper square variant="outlined">
+    <Content>ログ内容設定</Content>
+    <TextConfig
+      value={Config.LogTopIndent}
+      labelText="行頭文字"
+      valueType="text"
+      on:changed={(e) => onTextConfigChanged(e, "logtopindent")}
+    />
+    <TextConfig
+      value={Config.LogUserNamePrefix}
+      labelText="ユーザ名prefix"
+      valueType="text"
+      on:changed={(e) => onTextConfigChanged(e, "lognameprefix")}
+    />
+  </Paper>
 </Paper>
 
 <Paper>
