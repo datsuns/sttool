@@ -24,6 +24,8 @@ type ConfigBody struct {
 	OverlayEnabled             bool     `yaml:"OVERLAY_ENABLE"`
 	ClipPlayerWidth            int      `yaml:"CLIP_PLAYER_WIDTH"`
 	ClipPlayerHeight           int      `yaml:"CLIP_PLAYER_HEIGHT"`
+	LogTopIndent               string   `yaml:"LOG_TOP_INDENT"`
+	LogUserNamePrefix          string   `yaml:"LOG_USER_NAME_PREFIX"`
 }
 
 type AuthEntry struct {
@@ -57,6 +59,8 @@ var (
 		OverlayEnabled:             true,
 		ClipPlayerWidth:            640,
 		ClipPlayerHeight:           480,
+		LogTopIndent:               "  ",
+		LogUserNamePrefix:          "- ",
 	}
 )
 
@@ -270,4 +274,12 @@ func (c *Config) ClipWidth() int {
 
 func (c *Config) ClipHeight() int {
 	return c.Body.ClipPlayerHeight
+}
+
+func (c *Config) TopIndent() string {
+	return c.Body.LogTopIndent
+}
+
+func (c *Config) UserNamePrefix() string {
+	return c.Body.LogUserNamePrefix
 }

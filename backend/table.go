@@ -199,7 +199,7 @@ func handleNotificationStreamOffline(_ *BackendContext, cfg *Config, r *Responce
 	s.StreamFinished()
 	log, _ := os.OpenFile(cfg.StatsLogFullPath(), os.O_APPEND|os.O_RDWR|os.O_CREATE, 0666)
 	defer log.Close()
-	log.WriteString(s.String())
+	log.WriteString(s.String(cfg.TopIndent(), cfg.UserNamePrefix()))
 }
 
 // サブギフした

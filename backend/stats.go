@@ -151,49 +151,49 @@ func (t *TwitchStats) Clear() {
 	}
 }
 
-func (t *TwitchStats) String() string {
+func (t *TwitchStats) String(topIndent, namePrefix string) string {
 	raidTimes, _ := t.LoadRaidResult()
 	started := t.LastPeriod.Started.Format("2006/01/02 15:04:05")
 	finished := t.LastPeriod.Finished.Format("2006/01/02 15:04:05")
-	followResult := fmt.Sprintf("  新規フォロー: %v人\n", len(t.FollowStats.Users))
+	followResult := fmt.Sprintf("%v新規フォロー: %v人\n", topIndent, len(t.FollowStats.Users))
 	for _, u := range t.FollowStats.Users {
-		followResult += fmt.Sprintf("    - %vさん\n", u)
+		followResult += fmt.Sprintf("%v  %v%vさん\n", topIndent, namePrefix, u)
 	}
-	chanepoResult := fmt.Sprintf("  チャネポ総回数: %v\n", t.LoadChannelPointTotal())
+	chanepoResult := fmt.Sprintf("%vチャネポ総回数: %v\n", topIndent, t.LoadChannelPointTotal())
 	for name, times := range t.LoadChannelPointHistory() {
-		chanepoResult += fmt.Sprintf("    - %vさん: %v回\n", name, times)
+		chanepoResult += fmt.Sprintf("%v  %v%vさん: %v回\n", topIndent, namePrefix, name, times)
 	}
-	subscResult := fmt.Sprintf("  新規サブスク: %v人\n", len(t.LoadSubScribed()))
+	subscResult := fmt.Sprintf("%v新規サブスク: %v人\n", topIndent, len(t.LoadSubScribed()))
 	for name := range t.LoadSubscriptonHistory() {
-		subscResult += fmt.Sprintf("    - %vさん\n", name)
+		subscResult += fmt.Sprintf("%v  %v%vさん\n", topIndent, namePrefix, name)
 	}
-	subGifResult := fmt.Sprintf("  総サブギフ個数: %v個\n", t.LoadSubGiftTotal())
+	subGifResult := fmt.Sprintf("%v総サブギフ個数: %v個\n", topIndent, t.LoadSubGiftTotal())
 	for name, times := range t.LoadSubGiftHistory() {
-		subGifResult += fmt.Sprintf("    - %vさん(%v個)\n", name, times)
+		subGifResult += fmt.Sprintf("%v  %v%vさん(%v個)\n", topIndent, namePrefix, name, times)
 	}
-	subGifRecvResult := fmt.Sprintf("    >> サブギフ受け取った: %v人\n", len(t.LoadSubGifted()))
+	subGifRecvResult := fmt.Sprintf("%v  >> サブギフ受け取った: %v人\n", topIndent, len(t.LoadSubGifted()))
 	for name := range t.LoadSubGifted() {
-		subGifRecvResult += fmt.Sprintf("      - %vさん\n", name)
+		subGifRecvResult += fmt.Sprintf("%v    %v%vさん\n", topIndent, namePrefix, name)
 	}
-	cheerResult := fmt.Sprintf("  ビッツ: %v\n", t.LoadCheerTotal())
+	cheerResult := fmt.Sprintf("%vビッツ: %v\n", topIndent, t.LoadCheerTotal())
 	for name, bitsRecord := range t.LoadCheerHistory() {
-		cheerResult += fmt.Sprintf("    - %vさん(%v ビッツ)\n", name, bitsRecord.Bits)
+		cheerResult += fmt.Sprintf("%v  %v%vさん(%v ビッツ)\n", topIndent, namePrefix, name, bitsRecord.Bits)
 	}
-	raidResult := fmt.Sprintf("  レイド: %v回\n", raidTimes)
+	raidResult := fmt.Sprintf("%vレイド: %v回\n", topIndent, raidTimes)
 	for _, e := range t.LoadRaidHistory() {
-		raidResult += fmt.Sprintf("    - %vさん\n", e.From)
+		raidResult += fmt.Sprintf("%v  %v%vさん\n", topIndent, namePrefix, e.From)
 	}
-	gigantifiedEmoteResult := fmt.Sprintf("  巨大化スタンプ: %v回\n", t.LoadGigantifiedEmoteTimes())
+	gigantifiedEmoteResult := fmt.Sprintf("%v巨大化スタンプ: %v回\n", topIndent, t.LoadGigantifiedEmoteTimes())
 	for k, v := range t.LoadGigantifiedEmoteHistory() {
-		gigantifiedEmoteResult += fmt.Sprintf("    - %vさん : %v回\n", k, v)
+		gigantifiedEmoteResult += fmt.Sprintf("%v  %v%vさん : %v回\n", topIndent, namePrefix, k, v)
 	}
-	messageEffectResult := fmt.Sprintf("  メッセージエフェクト: %v回\n", t.LoadMessageEffectTimes())
+	messageEffectResult := fmt.Sprintf("%vメッセージエフェクト: %v回\n", topIndent, t.LoadMessageEffectTimes())
 	for k, v := range t.LoadMessageEffectHistory() {
-		messageEffectResult += fmt.Sprintf("    - %vさん : %v回\n", k, v)
+		messageEffectResult += fmt.Sprintf("%v  %v%vさん : %v回\n", topIndent, namePrefix, k, v)
 	}
 	return fmt.Sprintf(
 		"------------------------------------------------------------\n"+
-			"  配信時間: %v ~ %v\n"+
+			"%v配信時間: %v ~ %v\n"+
 			"%v"+
 			"%v"+
 			"%v"+
@@ -203,7 +203,7 @@ func (t *TwitchStats) String() string {
 			"%v"+
 			"%v"+
 			"%v",
-		started, finished,
+		topIndent, started, finished,
 		followResult,
 		chanepoResult,
 		subscResult,
@@ -216,8 +216,8 @@ func (t *TwitchStats) String() string {
 	)
 }
 
-func (t *TwitchStats) Dump(w io.Writer) {
-	w.Write([]byte(t.String() + "\n"))
+func (t *TwitchStats) Dump(w io.Writer, topIndent, namePrefix string) {
+	w.Write([]byte(t.String(topIndent, namePrefix) + "\n"))
 }
 
 func (t *TwitchStats) StreamStarted() {
