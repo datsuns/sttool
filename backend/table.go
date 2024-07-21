@@ -31,7 +31,8 @@ var (
 		"channel.chat.message":         {"チャット", "1", buildRequestWithUser, handleNotificationChannelChatMessage},    // user:read:chat
 		"channel.raid":                 {"レイド開始", "1", buildRequestWithFromUser, handleNotificationRaidStarted},      // none
 		"channel.follow":               {"フォロー", "2", buildRequestWithModerator, handleNotificationChannelFollow},    // moderator:read:followers
-		"channel.channel_points_custom_reward_redemption.add": {"チャネポ", "1", buildRequest, handleNotificationChannelPointsCustomRewardRedemptionAdd}, // channel:read:redemptions
+		"channel.channel_points_custom_reward_redemption.add":    {"チャネポ", "1", buildRequest, handleNotificationChannelPointsCustomRewardRedemptionAdd},     // channel:read:redemptions
+		"channel.channel_points_automatic_reward_redemption.add": {"チャネポ2", "1", buildRequest, handleNotificationChannelPointsAutomaticRewardRedemptionAdd}, // channel:read:redemptions
 	}
 )
 
@@ -255,6 +256,24 @@ func handleNotificationChannelPointsCustomRewardRedemptionAdd(_ *BackendContext,
 		slog.Any("title", e.Reward.Title),
 	)
 	s.ChannelPoint(UserName(e.UserName), ChannelPointTitle(e.Reward.Title))
+}
+
+// TODO imple
+// https://dev.twitch.tv/docs/eventsub/eventsub-subscription-types/#channelchannel_points_automatic_reward_redemptionadd
+func handleNotificationChannelPointsAutomaticRewardRedemptionAdd(_ *BackendContext, _ *Config, r *Responce, raw []byte, s *TwitchStats) {
+	v := &ResponceChannelPointsAutomaticRewardRedemptionAdd{}
+	err := json.Unmarshal(raw, &v)
+	if err != nil {
+		logger.Error("handleNotificationChannelPointsAutomaticRewardRedemptionAdd::Unmarshal", slog.Any("ERR", err.Error()), slog.Any("raw", string(raw)))
+	}
+	e := &v.Payload.Event
+	logType := e.Reward.Type
+	statsLogger.Info("# Automaticチャネポ",
+		slog.Any(LogFieldName_Type, logType),
+		slog.Any(LogFieldName_UserName, e.UserName),
+		slog.Any(LogFieldName_LoginName, e.UserLogin),
+		slog.Any("text", e.Message.Text),
+	)
 }
 
 func handleNotificationChannelChatNotificationSubGifted(_ *BackendContext, _ *Config, r *Responce, e *EventFormatChannelChatNotification, s *TwitchStats) {

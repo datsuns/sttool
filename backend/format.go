@@ -550,6 +550,40 @@ type ResponceChannelPointsCustomRewardRedemptionAdd struct {
 }
 
 // --------------------------------------------------------
+type EventFormatChannelPointsAutomaticRewardRedemptionAdd struct {
+	*EventFormatCommon
+	Id     string `json:"id"`
+	Reward struct {
+		Type          string `json:"type"`
+		Cost          int    `json:"cost"`
+		UnlockedEmote struct {
+			Id   string `json:"id"`
+			Name string `json:"name"`
+		} `json:"unlocked_emote"`
+	} `json:"reward"`
+	Message struct {
+		Text   string `json:"text"`
+		Emotes []struct {
+			Id    string `json:"id"`
+			Begin string `json:"begin"`
+			End   string `json:"end"`
+		} `json:"emotes"`
+	} `json:"message"`
+	UserInput  string `json:"user_input"`
+	RedeemedAt string `json:"redeemed_at"`
+}
+
+type PayloadFormatChannelPointsAutomaticRewardRedemptionAdd struct {
+	Subscription SubscriptionFormat                                   `json:"subscription"`
+	Event        EventFormatChannelPointsAutomaticRewardRedemptionAdd `json:"event"`
+}
+
+type ResponceChannelPointsAutomaticRewardRedemptionAdd struct {
+	Metadata MetadataFormat                                         `json:"metadata"`
+	Payload  PayloadFormatChannelPointsAutomaticRewardRedemptionAdd `json:"payload"`
+}
+
+// --------------------------------------------------------
 type EventFormatChannelFollow struct {
 	*EventFormatCommon
 	FollowedAt string `json:"followed_at"`
