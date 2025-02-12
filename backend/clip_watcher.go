@@ -76,7 +76,7 @@ func StartWatcher(cfg *Config, done chan struct{}) {
 			case <-done:
 				return
 			case <-ticker.C:
-				ret, raw, err := referUserClipsByDate(cfg, cfg.TargetUserId, false, &byDate)
+				ret, raw, err := ReferUserClipsByDate(cfg, cfg.TargetUserId, false, &byDate)
 				if err != nil {
 					statsLogger.Error("NewClip",
 						slog.Any(LogFieldName_Type, "referUserClipsByDate"),

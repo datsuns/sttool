@@ -233,10 +233,10 @@ func ReferTargetUser(cfg *Config) (string, string, string, int, error) {
 }
 
 func ReferUserClips(cfg *Config, userId string) (string, *GetClipsApiResponce, error) {
-	return referUserClipsByDate(cfg, userId, true, nil)
+	return ReferUserClipsByDate(cfg, userId, true, nil)
 }
 
-func referUserClipsByDate(cfg *Config, userId string, featured bool, date *time.Time) (text string, ret *GetClipsApiResponce, err error) {
+func ReferUserClipsByDate(cfg *Config, userId string, featured bool, date *time.Time) (text string, ret *GetClipsApiResponce, err error) {
 	maxN := 4
 	url := fmt.Sprintf("https://api.twitch.tv/helix/clips?broadcaster_id=%v&is_featured=%v&first=%v", userId, featured, maxN)
 	if date != nil {
