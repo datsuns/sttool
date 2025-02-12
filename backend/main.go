@@ -51,6 +51,7 @@ type ExitStatus int
 const (
 	StreamFinished ExitStatus = iota
 	ConnectionCanceled
+	ReconnectRequested
 	ConnectionError
 )
 
@@ -224,6 +225,8 @@ func (c *BackendContext) Progress(finishChan *chan ExitStatus, firstTime bool, c
 			}
 		case "session_reconnect":
 			logger.Info("progress", slog.Any("event", "reconnect"))
+			*finishChan <- ReconnectRequested
+			return
 		case "notification":
 			logger.Info("event: notification")
 			if !handleNotification(c, c.Config, r, raw, c.Stats) {
@@ -238,18 +241,16 @@ func (c *BackendContext) Progress(finishChan *chan ExitStatus, firstTime bool, c
 	}
 }
 
-func (c *BackendContext) ServeMain(fin *chan ExitStatus, firstTime bool) *websocket.Conn {
-	conn, _ := connect(c.Config.IsLocalTest())
+func (c *BackendContext) ServeMain(conn *websocket.Conn, fin *chan ExitStatus, firstTime bool) {
 
 	go func() {
 		c.Progress(fin, firstTime, conn)
 	}()
-	return conn
+	return
 }
 
 func (c *BackendContext) Serve() {
 	var fin chan ExitStatus
-	var conn *websocket.Conn
 	statsLogger.Info("ToolVersion", slog.Any(LogFieldName_Type, "ToolVersion"), slog.Any("value", ToolVersion))
 	expires, err := ConfirmAccessToken(c.Config)
 	if err != nil {
@@ -263,7 +264,8 @@ func (c *BackendContext) Serve() {
 	signal.Notify(interrupt, os.Interrupt)
 
 	fin = make(chan ExitStatus)
-	conn = c.ServeMain(&fin, true)
+	conn, _ := connect(c.Config.IsLocalTest())
+	c.ServeMain(conn, &fin, true)
 
 	done := make(chan struct{})
 	StartWatcher(c.Config, done)
@@ -275,13 +277,15 @@ func (c *BackendContext) Serve() {
 		select {
 		case status := <-fin:
 			//return
+			conn.Close()
 			if status == StreamFinished {
 				logger.Info("stream finished exit serve")
 				done <- struct{}{}
 				return
 			}
 			fin = make(chan ExitStatus)
-			conn = c.ServeMain(&fin, false)
+			conn, _ := connect(c.Config.IsLocalTest())
+			c.ServeMain(conn, &fin, false)
 		case <-c.Refreshed:
 			logger.Info("Session Refreshed")
 			conn.Close()

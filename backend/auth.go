@@ -77,6 +77,7 @@ func Issue1stTimeAuthentication(cfg *Config) error {
 func ConfirmAccessToken(cfg *Config) (int, error) {
 	if e := cfg.LoadAuthConfig(); e != nil {
 		logger.Info("ConfirmAccessToken", slog.Any("msg", "LoadAuthConfig error. try to 1st auth"), slog.Any("ERR", e.Error()))
+		statsLogger.Info("1stAuth", slog.Any(LogFieldName_Type, "1stAuth"), slog.Any("msg", "LoadAuthConfig error. try to 1st auth"))
 		if e := Issue1stTimeAuthentication(cfg); e != nil {
 			return 0, e
 		}
