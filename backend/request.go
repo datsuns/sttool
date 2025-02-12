@@ -96,6 +96,7 @@ func referTargetUserIdWith(cfg *Config, username string) (string, string, string
 	return r.Data[0].Id, r.Data[0].Login, r.Data[0].DisplayName, status, nil
 }
 
+// https://dev.twitch.tv/docs/authentication/getting-tokens-oauth/#use-the-authorization-code-to-get-a-token
 func RequestUserAccessToken(cfg *Config, code, redirectUri string) (string, string, error) {
 	var err error
 	params := url.Values{}
@@ -126,6 +127,9 @@ func RequestUserAccessToken(cfg *Config, code, redirectUri string) (string, stri
 	return r.AccessToken, r.RefreshToken, nil
 }
 
+// https://dev.twitch.tv/docs/authentication/refresh-tokens/
+// "expires_in"を見てタイミングを測るのもいいけどほかの理由でもinvalidになる可能性あるので
+// 401応答をハンドリングするほうがいいよ、とのこと
 func RefreshAccessToken(cfg *Config, refreshToken string) (string, string, error) {
 	var err error
 	params := url.Values{}
@@ -156,6 +160,7 @@ func RefreshAccessToken(cfg *Config, refreshToken string) (string, string, error
 	return r.AccessToken, r.RefreshToken, nil
 }
 
+// https://dev.twitch.tv/docs/authentication/validate-tokens/
 func ValidateAccessToken(cfg *Config) (bool, int, string, string, error) {
 	req, err := http.NewRequest("GET", "https://id.twitch.tv/oauth2/validate", nil)
 	if err != nil {

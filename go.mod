@@ -11,7 +11,7 @@ require (
 	github.com/gorilla/websocket v1.5.1
 	github.com/pkg/browser v0.0.0-20240102092130-5ac0b6a4141c
 	github.com/samber/slog-multi v1.0.2
-	github.com/wailsapp/wails/v2 v2.8.0
+	github.com/wailsapp/wails/v2 v2.9.2
 	gopkg.in/yaml.v3 v3.0.1
 )
 
@@ -42,13 +42,13 @@ require (
 	github.com/tkrajina/go-reflector v0.5.6 // indirect
 	github.com/valyala/bytebufferpool v1.0.0 // indirect
 	github.com/valyala/fasttemplate v1.2.2 // indirect
-	github.com/wailsapp/go-webview2 v1.0.10 // indirect
+	github.com/wailsapp/go-webview2 v1.0.16 // indirect
 	github.com/wailsapp/mimetype v1.4.1 // indirect
-	golang.org/x/crypto v0.18.0 // indirect
+	golang.org/x/crypto v0.23.0 // indirect
 	golang.org/x/exp v0.0.0-20230522175609-2e198f4a06a1 // indirect
-	golang.org/x/net v0.20.0 // indirect
-	golang.org/x/sys v0.17.0 // indirect
-	golang.org/x/text v0.14.0 // indirect
+	golang.org/x/net v0.25.0 // indirect
+	golang.org/x/sys v0.20.0 // indirect
+	golang.org/x/text v0.15.0 // indirect
 )
 
 // replace github.com/wailsapp/wails/v2 v2.8.0 => C:\Users\thesk\go\pkg\mod

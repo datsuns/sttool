@@ -2,6 +2,7 @@ package backend
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"log/slog"
 	"net/http"
@@ -9,14 +10,20 @@ import (
 )
 
 func redirectHandler(w http.ResponseWriter, r *http.Request, fin chan struct{}) string {
+	ret := ""
 	v := r.URL.Query()
 	//logger.Info("redirectHandler", slog.Any("msg", "occur"), slog.Any("code", v["code"]))
-	fmt.Fprintf(w, "ブラウザを閉じてください")
+	if v.Has("error") {
+		fmt.Fprintf(w, "再度認証しなおしてください")
+	} else {
+		fmt.Fprintf(w, "ブラウザを閉じてください")
+		ret = v.Get("code")
+	}
 	if f, ok := w.(http.Flusher); ok {
 		f.Flush()
 	}
 	fin <- struct{}{}
-	return v.Get("code")
+	return ret
 }
 
 func Issue1stTimeAuthentication(cfg *Config) error {
@@ -48,6 +55,13 @@ func Issue1stTimeAuthentication(cfg *Config) error {
 	defer cancel()
 	if err := server.Shutdown(ctx); err != nil {
 		logger.Error("Issue1stTimeAuthentication::shutdown", slog.Any("error", err.Error))
+	}
+	if code == "" {
+		logger.Error("Issue1stTimeAuthentication::rejected", slog.Any("error", "1st time Auth rejected"))
+		statsLogger.Error("rejected", slog.Any(LogFieldName_Type, "Error:1stTimeAuthentication"),
+			slog.Any("reason", "1st time Auth rejected"),
+		)
+		return errors.New("1stAuthRejected")
 	}
 
 	a, r, _ := RequestUserAccessToken(cfg, code, AuthRedirectUri)
