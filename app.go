@@ -135,7 +135,10 @@ func (a *App) DebugRaidTest(userName string) {
 	cfg.TargetUser = userName
 	id, _, diplayName, _, _ := backend.ReferTargetUser(cfg)
 	runtime.LogDebug(a.ctx, fmt.Sprintf("user [%v] is [%v]", userName, id))
-	_, ret := backend.ReferUserClips(cfg, id)
+	_, ret, err := backend.ReferUserClips(cfg, id)
+	if err != nil {
+		return
+	}
 	data := []backend.UserClip{}
 	for _, c := range ret.Data {
 		data = append(data, backend.UserClip{
