@@ -76,7 +76,14 @@ func StartWatcher(cfg *Config, done chan struct{}) {
 			case <-done:
 				return
 			case <-ticker.C:
-				ret, raw := referUserClipsByDate(cfg, cfg.TargetUserId, false, &byDate)
+				ret, raw, err := referUserClipsByDate(cfg, cfg.TargetUserId, false, &byDate)
+				if err != nil {
+					statsLogger.Error("NewClip",
+						slog.Any(LogFieldName_Type, "referUserClipsByDate"),
+						slog.Any("err", err.Error()),
+					)
+					break
+				}
 				if len(ret) > 0 {
 					playSound(cfg.NotifySoundFilePath())
 					showNotification(raw.Data[0].CreatorName, raw.Data[0].Url, raw.Data[0].CreatedAt)

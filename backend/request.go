@@ -3,6 +3,7 @@ package backend
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"log/slog"
@@ -33,8 +34,11 @@ func issueRequest(r *http.Request, debug bool) ([]byte, int, error) {
 	switch resp.StatusCode {
 	case 200:
 	case 202:
+	case 401:
+		logger.Error("issueRequest", slog.Any("msg", "401 error"), slog.Any("Status", resp.Status), slog.Any("URL", r.URL), slog.Any("RawRet", string(byteArray)))
+		return nil, resp.StatusCode, errors.New(RequestErrorBy401)
 	default:
-		logger.Info("issueRequest", slog.Any("msg", "unexpected status"), slog.Any("Status", resp.Status), slog.Any("URL", r.URL), slog.Any("RawRet", string(byteArray)))
+		logger.Error("issueRequest", slog.Any("msg", "unexpected status"), slog.Any("Status", resp.Status), slog.Any("URL", r.URL), slog.Any("RawRet", string(byteArray)))
 		return nil, resp.StatusCode, fmt.Errorf("error responce. status[%v] msg[%v]", resp.StatusCode, string(byteArray))
 	}
 	return byteArray, resp.StatusCode, nil
@@ -54,6 +58,27 @@ func issueEventSubRequest(cfg *Config, method, url string, body io.Reader) ([]by
 	req.Header.Set("Client-Id", cfg.ClientId())
 
 	return issueRequest(req, cfg.IsDebug())
+}
+
+func issueGetClipRequest(cfg *Config, url string) (string, *GetClipsApiResponce, error) {
+	raw, _, err := issueEventSubRequest(cfg, "GET", url, nil)
+	if err != nil {
+		logger.Error("Eventsub Request", slog.Any("ERR", err.Error()))
+		return "", nil, err
+	}
+
+	r := &GetClipsApiResponce{}
+	err = json.Unmarshal(raw, &r)
+	if err != nil {
+		logger.Error("json.Unmarshal", slog.Any("ERR", err.Error()))
+		return "", nil, err
+	}
+	ret := ""
+	for _, v := range r.Data {
+		//infoLogger.Info("UserClip", slog.Any("タイトル", v.Title), slog.Any("URL", v.Url), slog.Any("視聴回数", v.ViewCount))
+		ret += fmt.Sprintf("   再生回数[%v] / タイトル[%v] / URL[ %v ] / Id[ %v ]\n", v.ViewCount, v.Title, v.Url, v.Id)
+	}
+	return ret, r, nil
 }
 
 // https://dev.twitch.tv/docs/authentication/getting-tokens-oauth/#authorization-code-grant-flow
@@ -207,41 +232,23 @@ func ReferTargetUser(cfg *Config) (string, string, string, int, error) {
 	return referTargetUserIdWith(cfg, cfg.UserName())
 }
 
-func ReferUserClips(cfg *Config, userId string) (string, *GetClipsApiResponce) {
+func ReferUserClips(cfg *Config, userId string) (string, *GetClipsApiResponce, error) {
 	return referUserClipsByDate(cfg, userId, true, nil)
 }
 
-func issueGetClipRequest(cfg *Config, url string) (string, *GetClipsApiResponce) {
-	raw, _, err := issueEventSubRequest(cfg, "GET", url, nil)
-	if err != nil {
-		logger.Error("Eventsub Request", slog.Any("ERR", err.Error()))
-		return "", nil
-	}
-
-	r := &GetClipsApiResponce{}
-	err = json.Unmarshal(raw, &r)
-	if err != nil {
-		logger.Error("json.Unmarshal", slog.Any("ERR", err.Error()))
-		return "", nil
-	}
-	ret := ""
-	for _, v := range r.Data {
-		//infoLogger.Info("UserClip", slog.Any("タイトル", v.Title), slog.Any("URL", v.Url), slog.Any("視聴回数", v.ViewCount))
-		ret += fmt.Sprintf("   再生回数[%v] / タイトル[%v] / URL[ %v ] / Id[ %v ]\n", v.ViewCount, v.Title, v.Url, v.Id)
-	}
-	return ret, r
-}
-
-func referUserClipsByDate(cfg *Config, userId string, featured bool, date *time.Time) (text string, ret *GetClipsApiResponce) {
+func referUserClipsByDate(cfg *Config, userId string, featured bool, date *time.Time) (text string, ret *GetClipsApiResponce, err error) {
 	maxN := 4
 	url := fmt.Sprintf("https://api.twitch.tv/helix/clips?broadcaster_id=%v&is_featured=%v&first=%v", userId, featured, maxN)
 	if date != nil {
 		url += fmt.Sprintf("&started_at=%v", date.UTC().Format(time.RFC3339))
 	}
 
-	text, ret = issueGetClipRequest(cfg, url)
+	text, ret, err = issueGetClipRequest(cfg, url)
+	if err != nil {
+		return "", nil, err
+	}
 	if len(ret.Data) > 0 {
-		return text, ret
+		return text, ret, nil
 	}
 	url = fmt.Sprintf("https://api.twitch.tv/helix/clips?broadcaster_id=%v&is_featured=%v&first=%v", userId, false, maxN)
 	if date != nil {

@@ -118,7 +118,7 @@ func receive(cfg *Config, conn *websocket.Conn) (*Responce, []byte, error) {
 }
 
 // https://dev.twitch.tv/docs/eventsub/eventsub-subscription-types/#subscription-types
-func handleSessionWelcome(_ *BackendContext, cfg *Config, r *Responce, _ []byte, _ *TwitchStats) {
+func handleSessionWelcome(_ *BackendContext, cfg *Config, r *Responce, _ []byte, _ *TwitchStats) error {
 	if cfg.IsLocalTest() {
 		//return
 	}
@@ -126,8 +126,10 @@ func handleSessionWelcome(_ *BackendContext, cfg *Config, r *Responce, _ []byte,
 		err := createEventSubscription(cfg, r.Payload.Session.Id, k, &v)
 		if err != nil {
 			logger.Error("handleSessionWelcome::createEventSubscription", slog.Any("ERR", err.Error()))
+			return err
 		}
 	}
+	return nil
 }
 
 func handleNotification(ctx *BackendContext, cfg *Config, r *Responce, raw []byte, stats *TwitchStats) bool {
@@ -214,7 +216,11 @@ func (c *BackendContext) Progress(finishChan *chan ExitStatus, firstTime bool, c
 		switch r.Metadata.MessageType {
 		case "session_welcome":
 			logger.Info("progress", slog.Any("event", "connected"))
-			handleSessionWelcome(c, c.Config, r, raw, c.Stats)
+			err := handleSessionWelcome(c, c.Config, r, raw, c.Stats)
+			if err.Error() == RequestErrorBy401 {
+				*finishChan <- ReconnectRequested
+				return
+			}
 			if firstTime && c.CallBack.OnConnected != nil {
 				c.CallBack.OnConnected()
 			}

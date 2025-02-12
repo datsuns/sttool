@@ -19,6 +19,8 @@ const (
 	StatsLogPath           = "配信履歴.txt"
 	RaidLogPath            = "レイド.txt"
 	NotifySoundDefault     = "C:\\Windows\\Media\\chimes.wav"
+
+	RequestErrorBy401 = "RequestErrorBy401"
 )
 
 var (

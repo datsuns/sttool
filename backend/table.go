@@ -294,7 +294,14 @@ func handleNotificationChannelChatNotificationRaid(ctx *BackendContext, cfg *Con
 		slog.Any("viewers", e.RaId.ViewerCount),
 	)
 	s.Raid(UserName(e.RaId.UserName), e.RaId.ViewerCount)
-	clipText, clips := ReferUserClips(cfg, e.RaId.UserId)
+	clipText, clips, err := ReferUserClips(cfg, e.RaId.UserId)
+	if err != nil {
+		statsLogger.Error("event(Raid)",
+			slog.Any(LogFieldName_Type, "ReferUserClips"),
+			slog.Any("err", err.Error()),
+		)
+		return
+	}
 	log, _ := os.OpenFile(cfg.RaidLogPath, os.O_APPEND|os.O_RDWR|os.O_CREATE, 0666)
 	defer log.Close()
 	fmt.Fprintf(log, "-- %v さんのクリップ -- \n", e.RaId.UserName)
