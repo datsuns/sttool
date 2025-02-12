@@ -75,7 +75,11 @@ func createEventSubscription(cfg *Config, sessionID, event string, e *EventTable
 		slog.Any("Type", event),
 		slog.Any("Raw", string(bin)),
 	)
-	_, _, err := issueEventSubRequest(cfg, "POST", "https://api.twitch.tv/helix/eventsub/subscriptions", bytes.NewReader(bin))
+	endpoint := "https://api.twitch.tv/helix/eventsub/subscriptions"
+	if cfg.IsLocalTest() {
+		endpoint = fmt.Sprintf("http://%v/eventsub/subscriptions", LocalTestAddr)
+	}
+	_, _, err := issueEventSubRequest(cfg, "POST", endpoint, bytes.NewReader(bin))
 	return err
 }
 
