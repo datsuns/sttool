@@ -1,3 +1,4 @@
+// session_reconnectの制御や401のハンドリングを増やしたので不要になってるはず(しばし残しておく)
 package backend
 
 import (

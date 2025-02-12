@@ -56,12 +56,10 @@ const (
 )
 
 type BackendContext struct {
-	CallBack  *CallBack
-	Config    *Config
-	Overlay   *OverlayContext
-	Stats     *TwitchStats
-	Session   *SessionLifecycle
-	Refreshed chan struct{}
+	CallBack *CallBack
+	Config   *Config
+	Overlay  *OverlayContext
+	Stats    *TwitchStats
 }
 
 var (
@@ -193,8 +191,6 @@ func NewBackend(callback *CallBack) *BackendContext {
 	logger, statsLogger = buildLogger(cfg, path)
 	ctx.Stats = NewTwitchStats()
 	ctx.Overlay = NewOverlay(cfg)
-	ctx.Refreshed = make(chan struct{})
-	ctx.Session = NewSessionLifecycle(&ctx.Refreshed, cfg)
 	return ctx
 }
 
@@ -258,13 +254,12 @@ func (c *BackendContext) ServeMain(conn *websocket.Conn, fin *chan ExitStatus, f
 func (c *BackendContext) Serve() {
 	var fin chan ExitStatus
 	statsLogger.Info("ToolVersion", slog.Any(LogFieldName_Type, "ToolVersion"), slog.Any("value", ToolVersion))
-	expires, err := ConfirmAccessToken(c.Config)
+	_, err := ConfirmAccessToken(c.Config)
 	if err != nil {
 		logger.Error("Serve", slog.Any("msg", "ConfirmAccessToken"), slog.Any("ERR", err.Error()))
 		return
 	}
 	statsLogger.Info("Start", slog.Any(LogFieldName_Type, "TargetUser"), slog.Any("name", c.Config.UserName()), slog.Any("id", c.Config.UserId()))
-	c.Session.Serve(expires)
 
 	interrupt := make(chan os.Signal, 1)
 	signal.Notify(interrupt, os.Interrupt)
@@ -292,12 +287,8 @@ func (c *BackendContext) Serve() {
 			fin = make(chan ExitStatus)
 			conn, _ := connect(c.Config.IsLocalTest())
 			c.ServeMain(conn, &fin, false)
-		case <-c.Refreshed:
-			logger.Info("Session Refreshed")
-			conn.Close()
 		case <-interrupt:
 			logger.Info("interrupt")
-			c.Session.Shutdown()
 
 			// Cleanly close the connection by sending a close message and then
 			// waiting (with timeout) for the server to close the connection.
