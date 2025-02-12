@@ -92,7 +92,7 @@ func StartAuthorizationCodeGrantFlow(cfg *Config, redirectUrl string, scope []st
 	return browser.OpenURL(url)
 }
 
-func createEventSubscription(cfg *Config, sessionID, event string, e *EventTableEntry) error {
+func CreateEventSubscription(cfg *Config, sessionID, event string, e *EventTableEntry) error {
 	bin := e.Builder(cfg, sessionID, event, e.Version)
 	logger.Info("create EventSub",
 		slog.Any("SessionID", sessionID),

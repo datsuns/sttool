@@ -123,7 +123,7 @@ func handleSessionWelcome(_ *BackendContext, cfg *Config, r *Responce, _ []byte,
 		//return
 	}
 	for k, v := range TwitchEventTable {
-		err := createEventSubscription(cfg, r.Payload.Session.Id, k, &v)
+		err := CreateEventSubscription(cfg, r.Payload.Session.Id, k, &v)
 		if err != nil {
 			logger.Error("handleSessionWelcome::createEventSubscription", slog.Any("ERR", err.Error()))
 			return err
